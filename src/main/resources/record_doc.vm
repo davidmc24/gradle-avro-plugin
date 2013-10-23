@@ -1,0 +1,37 @@
+<html>
+    <body>
+        <h1>$schema.getFullName()</h1>
+#if ($schema.getDoc())
+        <p>$schema.getDoc()</p>
+#end
+        <table>
+            <caption>Fields</caption>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Documentation</th>
+                </tr>
+            </thead>
+            <tbody>
+#foreach ($field in $schema.getFields())
+                <tr>
+                    <td>$field.name()</td>
+                    <td>$field.schema()</td>
+                    <td>
+#if ($field.defaultValue())
+                        $field.defaultValue()
+#end
+                    </td>
+                    <td>
+#if ($field.doc())
+                        $field.doc()
+#end
+                    </td>
+                </tr>
+#end
+            </tbody>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,9 @@
+<html>
+    <body>
+        <ul>
+#foreach ($schema in $schemas)
+            <li><a href="${schema.getFullName()}.html">$schema.getName()</a></li>
+#end
+        </ul>
+    </body>
+</html>

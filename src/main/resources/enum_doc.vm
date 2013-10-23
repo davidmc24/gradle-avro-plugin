@@ -1,0 +1,14 @@
+<html>
+    <body>
+        <h1>$schema.getFullName()</h1>
+#if ($schema.getDoc())
+        <p>$schema.getDoc()</p>
+#end
+        <h2>Symbols</h2>
+        <ul>
+#foreach ($symbol in $schema.getEnumSymbols())
+            <li>$symbol</li>
+#end
+        </ul>
+    </body>
+</html>

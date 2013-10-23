@@ -7,6 +7,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.internal.ConventionMapping;
 import org.gradle.api.internal.IConventionAware;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
@@ -61,15 +62,15 @@ public class AvroPlugin implements Plugin<Project> {
                 configureJavaGenerationTask(project, sourceSet, protoTask);
             }
         });
+        configureDocumentationTask(project);
     }
 
     private static void configureIntelliJ(final Project project) {
         project.getPlugins().withType(IdeaPlugin.class).all(new Action<IdeaPlugin>() {
             @Override
             public void execute(IdeaPlugin ideaPlugin) {
-                SourceSetContainer sourceSets = getSourceSets(project);
-                SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                SourceSet testSourceSet = sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME);
+                SourceSet mainSourceSet = getMainSourceSet(project);
+                SourceSet testSourceSet = getTestSourceSet(project);
                 IdeaModule module = ideaPlugin.getModel().getModule();
                 module.setSourceDirs(new ImmutableSet.Builder<File>()
                         .addAll(module.getSourceDirs())
@@ -124,6 +125,18 @@ public class AvroPlugin implements Plugin<Project> {
         return task;
     }
 
+    private static AvroDocumentationTask configureDocumentationTask(Project project) {
+        // TODO: use constants
+        SourceSet sourceSet = getMainSourceSet(project);
+        AvroDocumentationTask task = project.getTasks().create("avrodoc", AvroDocumentationTask.class);
+        task.setDescription(String.format("Generates Avro documentation for the %s source.", sourceSet.getName()));
+        task.setGroup(JavaBasePlugin.DOCUMENTATION_GROUP);
+        task.source(getAvroSourceDir(project, sourceSet));
+        task.include("*." + SCHEMA_EXTENSION); // TODO: support protocols
+        task.setOutputDir(new File(project.getBuildDir(), "docs/avro"));
+        return task;
+    }
+
     private static File getAvroSourceDir(Project project, SourceSet sourceSet) {
         return project.file(String.format("src/%s/avro", sourceSet.getName()));
     }
@@ -138,6 +151,14 @@ public class AvroPlugin implements Plugin<Project> {
 
     private static SourceSetContainer getSourceSets(Project project) {
         return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets();
+    }
+
+    private static SourceSet getMainSourceSet(Project project) {
+        return getSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+    }
+
+    private static SourceSet getTestSourceSet(Project project) {
+        return getSourceSets(project).getByName(SourceSet.TEST_SOURCE_SET_NAME);
     }
 
     private static class NonGeneratedDirectoryFileFilter implements FileFilter {
