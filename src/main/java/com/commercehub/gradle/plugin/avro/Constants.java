@@ -7,6 +7,8 @@ class Constants {
     static final String PROTOCOL_EXTENSION = "avpr";
     static final String IDL_EXTENSION = "avdl";
     static final String JAVA_EXTENSION = "java";
+    static final String ZIP_EXTENSION = "zip";
+    static final String JAR_EXTENSION = "jar";
 
     static final String GROUP_SOURCE_GENERATION = "Source Generation";
 

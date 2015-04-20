@@ -19,24 +19,17 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
-import static com.commercehub.gradle.plugin.avro.Constants.IDL_EXTENSION;
-import static com.commercehub.gradle.plugin.avro.Constants.PROTOCOL_EXTENSION;
+import static com.commercehub.gradle.plugin.avro.Constants.*;
 
 public class GenerateAvroProtocolTask extends OutputDirTask {
+    private static Set<String> SUPPORTED_EXTENSIONS = SetBuilder.build(IDL_EXTENSION, ZIP_EXTENSION, JAR_EXTENSION);
+
     @TaskAction
     protected void process() {
-        getLogger().info("Found {} files", getInputs().getSourceFiles().getFiles().size());
-        failOnUnsupportedFiles();
+        getLogger().info("Found {} files", filterSources(new FileExtensionSpec(SUPPORTED_EXTENSIONS)).getFiles().size());
         processFiles();
-    }
-
-    private void failOnUnsupportedFiles() {
-        FileCollection unsupportedFiles = filterSources(new NotSpec<>(new FileExtensionSpec(IDL_EXTENSION)));
-        if (!unsupportedFiles.isEmpty()) {
-            throw new GradleException(
-                    String.format("Unsupported file extension for the following files: %s", unsupportedFiles));
-        }
     }
 
     private void processFiles() {
