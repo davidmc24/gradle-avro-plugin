@@ -24,15 +24,22 @@ public class AvroPlugin implements Plugin<Project> {
     public void apply(final Project project) {
         project.getPlugins().apply(JavaPlugin.class);
         project.getPlugins().apply(AvroBasePlugin.class);
+        configureAvroConfiguration(project);
         configureTasks(project);
         configureIntelliJ(project);
     }
 
+    private static void configureAvroConfiguration(final Project project) {
+        project.getConfigurations().create("avro");
+    }
+
     private static void configureTasks(final Project project) {
+        final GenerateAvroProtocolTask protoDepTask = configureAvroProtocolDependenciesTask(project);
+        final GenerateAvroJavaTask javaDepTask = configureAvroDependenciesTask(project, protoDepTask);
         getSourceSets(project).all(new Action<SourceSet>() {
             public void execute(SourceSet sourceSet) {
                 GenerateAvroProtocolTask protoTask = configureProtocolGenerationTask(project, sourceSet);
-                configureJavaGenerationTask(project, sourceSet, protoTask);
+                configureJavaGenerationTask(project, sourceSet, protoTask, javaDepTask);
             }
         });
     }
@@ -59,15 +66,15 @@ public class AvroPlugin implements Plugin<Project> {
                 });
                 IdeaModule module = ideaPlugin.getModel().getModule();
                 module.setSourceDirs(new SetBuilder<File>()
-                        .addAll(module.getSourceDirs())
-                        .add(getAvroSourceDir(project, mainSourceSet))
-                        .add(mainGeneratedOutputDir)
-                        .build());
+                    .addAll(module.getSourceDirs())
+                    .add(getAvroSourceDir(project, mainSourceSet))
+                    .add(mainGeneratedOutputDir)
+                    .build());
                 module.setTestSourceDirs(new SetBuilder<File>()
-                        .addAll(module.getTestSourceDirs())
-                        .add(getAvroSourceDir(project, testSourceSet))
-                        .add(testGeneratedOutputDir)
-                        .build());
+                    .addAll(module.getTestSourceDirs())
+                    .add(getAvroSourceDir(project, testSourceSet))
+                    .add(testGeneratedOutputDir)
+                    .build());
                 // IntelliJ doesn't allow source directories beneath an excluded directory.
                 // Thus, we remove the build directory exclude and add all non-generated sub-directories as excludes.
                 SetBuilder<File> excludeDirs = new SetBuilder<>();
@@ -81,11 +88,43 @@ public class AvroPlugin implements Plugin<Project> {
         });
     }
 
-    private static GenerateAvroProtocolTask configureProtocolGenerationTask(final Project project, final SourceSet sourceSet) {
+    private static GenerateAvroProtocolTask configureAvroProtocolDependenciesTask(final Project project) {
+        final GenerateAvroProtocolTask task = project.getTasks()
+            .create("generateAvroProtocolDependencies", GenerateAvroProtocolTask.class);
+        task.setDescription("Generates Avro protocol definition files from dependency IDL files.");
+        task.setGroup(GROUP_SOURCE_GENERATION);
+        task.include("**/*." + IDL_EXTENSION);
+        task.source(getAvroDependencySources(project));
+        task.getConventionMapping().map("outputDir", new Callable<File>() {
+            @Override
+            public File call() throws Exception {
+                return new File(project.getBuildDir(), String.format("generated-deps-avro-%s", PROTOCOL_EXTENSION));
+            }
+        });
+        return task;
+    }
+
+    private static GenerateAvroJavaTask configureAvroDependenciesTask(final Project project,
+                                                                      final GenerateAvroProtocolTask protoDepTask) {
+        final GenerateAvroJavaTask task = project.getTasks().create("resolveAvroDependencies", GenerateAvroJavaTask.class);
+        task.setDescription("Process avro protocol and schema files in the avro configuration and supplies the types " +
+            "defined to the generateAvroJava task");
+        task.dependsOn(protoDepTask);
+        task.setGroup(GROUP_SOURCE_GENERATION);
+        task.include("**/*." + SCHEMA_EXTENSION, "**/*." + PROTOCOL_EXTENSION);
+        task.setCompile(false);
+        task.source(protoDepTask.getOutputDir());
+        task.source(protoDepTask.getOutputs());
+        task.source(getAvroDependencySources(project));
+        return task;
+    }
+
+    private static GenerateAvroProtocolTask configureProtocolGenerationTask(final Project project,
+                                                                            final SourceSet sourceSet) {
         String taskName = sourceSet.getTaskName("generate", "avroProtocol");
         GenerateAvroProtocolTask task = project.getTasks().create(taskName, GenerateAvroProtocolTask.class);
         task.setDescription(
-                String.format("Generates %s Avro protocol definition files from IDL files.", sourceSet.getName()));
+            String.format("Generates %s Avro protocol definition files from IDL files.", sourceSet.getName()));
         task.setGroup(GROUP_SOURCE_GENERATION);
         task.source(getAvroSourceDir(project, sourceSet));
         task.include("*." + IDL_EXTENSION);
@@ -98,12 +137,15 @@ public class AvroPlugin implements Plugin<Project> {
         return task;
     }
 
-    private static GenerateAvroJavaTask configureJavaGenerationTask(final Project project, final SourceSet sourceSet,
-                                                                    GenerateAvroProtocolTask protoTask) {
+    private static GenerateAvroJavaTask configureJavaGenerationTask(final Project project,
+                                                                    final SourceSet sourceSet,
+                                                                    final GenerateAvroProtocolTask protoTask,
+                                                                    final GenerateAvroJavaTask avroDepTask) {
         String taskName = sourceSet.getTaskName("generate", "avroJava");
-        GenerateAvroJavaTask task = project.getTasks().create(taskName, GenerateAvroJavaTask.class);
+        final GenerateAvroJavaTask task = project.getTasks().create(taskName, GenerateAvroJavaTask.class);
         task.setDescription(String.format("Generates %s Avro Java source files from schema/protocol definition files.",
-                sourceSet.getName()));
+            sourceSet.getName()));
+        task.dependsOn(avroDepTask);
         task.setGroup(GROUP_SOURCE_GENERATION);
         task.source(getAvroSourceDir(project, sourceSet));
         task.source(protoTask.getOutputDir());
@@ -113,6 +155,12 @@ public class AvroPlugin implements Plugin<Project> {
             @Override
             public File call() throws Exception {
                 return getGeneratedOutputDir(project, sourceSet, JAVA_EXTENSION);
+            }
+        });
+        task.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task t) {
+                task.addTypes(avroDepTask.getParsedTypes());
             }
         });
         SourceTask compileJavaTask = getCompileJavaTask(project, sourceSet);
@@ -143,6 +191,10 @@ public class AvroPlugin implements Plugin<Project> {
 
     private static SourceSet getTestSourceSet(Project project) {
         return getSourceSets(project).getByName(SourceSet.TEST_SOURCE_SET_NAME);
+    }
+
+    private static org.gradle.api.artifacts.Configuration getAvroDependencySources(Project project) {
+        return project.getConfigurations().getByName("avro");
     }
 
     private static class NonGeneratedDirectoryFileFilter implements FileFilter {

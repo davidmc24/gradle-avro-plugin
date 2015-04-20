@@ -1,0 +1,9 @@
+{
+    "type": "record",
+    "name": "TestDependentProto",
+    "namespace": "com.commercehub.gradle.plugin.avro.test",
+    "fields": [
+        {"name": "aBoolean", "type": "boolean", "default": true },
+        {"name": "aDependency", "type": "TestProtoRecord" }
+    ]
+}
