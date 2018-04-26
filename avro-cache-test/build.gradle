@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.commercehub.gradle.plugin:gradle-avro-plugin:0.14.1"
+    }
+}
+
+subprojects {
+
+    apply plugin: "com.commercehub.gradle.plugin.avro"
+
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        compile "org.apache.avro:avro:1.8.2"
+    }
+}
