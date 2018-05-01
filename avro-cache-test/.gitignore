@@ -40,6 +40,7 @@ Thumbs.db
 ################
 .gradle
 local.properties
+reports
 
 # Build output directies
 /target
