@@ -1,3 +1,6 @@
 rootProject.name = "gradle-avro-plugin"
 
 enableFeaturePreview("STABLE_PUBLISHING")
+
+include "avro-tools-api"
+include "avro-tools-1.8.2"

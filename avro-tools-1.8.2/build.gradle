@@ -1,0 +1,18 @@
+plugins {
+    id "java-library"
+    id "idea"
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api project(":avro-tools-api")
+    // TODO: is tools actually needed
+    implementation "org.apache.avro:avro-compiler:1.8.2"
+    implementation "org.apache.avro:avro-tools:1.8.2"
+    // TODO: tests
+}
+
+//mainClassName = "com.commercehub.avro.tool.Main"

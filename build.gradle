@@ -16,6 +16,7 @@ repositories {
 def compileAvroVersion = "1.8.2"
 
 dependencies {
+    compile project(":avro-tools-1.8.2") // TODO: remove
     compile localGroovy()
     compile "org.apache.avro:avro-compiler:${compileAvroVersion}"
     testCompile("org.spockframework:spock-core:1.2-groovy-2.4") {

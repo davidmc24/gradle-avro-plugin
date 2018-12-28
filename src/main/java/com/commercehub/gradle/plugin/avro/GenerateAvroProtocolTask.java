@@ -15,14 +15,13 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
+import com.commercehub.avro.tools.api.Transformation;
+import com.commercehub.avro.tools.impl.TransformationImpl;
 import org.apache.avro.compiler.idl.Idl;
-import org.apache.avro.compiler.idl.ParseException;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.UnknownConfigurationException;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.specs.NotSpec;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
@@ -32,11 +31,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.commercehub.gradle.plugin.avro.Constants.IDL_EXTENSION;
-import static com.commercehub.gradle.plugin.avro.Constants.PROTOCOL_EXTENSION;
 
 /**
  * Task to convert Avro IDL files into Avro protocol files using {@link Idl}.
@@ -45,49 +42,15 @@ import static com.commercehub.gradle.plugin.avro.Constants.PROTOCOL_EXTENSION;
 public class GenerateAvroProtocolTask extends OutputDirTask {
     @TaskAction
     protected void process() {
-        getLogger().info("Found {} files", getSource().getFiles().size());
-        failOnUnsupportedFiles();
-        processFiles();
-    }
-
-    private void failOnUnsupportedFiles() {
-        FileCollection unsupportedFiles = filterSources(new NotSpec<>(new FileExtensionSpec(IDL_EXTENSION)));
-        if (!unsupportedFiles.isEmpty()) {
-            throw new GradleException(
-                    String.format("Unsupported file extension for the following files: %s", unsupportedFiles));
-        }
-    }
-
-    private void processFiles() {
-        int processedFileCount = 0;
-        ClassLoader loader = getRuntimeClassLoader(getProject());
-        for (File sourceFile : filterSources(new FileExtensionSpec(IDL_EXTENSION))) {
-            processIDLFile(sourceFile, loader);
-            processedFileCount++;
-        }
-        setDidWork(processedFileCount > 0);
-    }
-
-    private void processIDLFile(File idlFile, ClassLoader loader) {
-        getLogger().info("Processing {}", idlFile);
-        File protoFile = new File(getOutputDir(),
-                FilenameUtils.getBaseName(idlFile.getName()) + "." + PROTOCOL_EXTENSION);
-        Idl idl = null;
         try {
-            idl = new Idl(idlFile, loader);
-            String protoJson = idl.CompilationUnit().toString(true);
-            FileUtils.writeJsonFile(protoFile, protoJson);
-            getLogger().debug("Wrote {}", protoFile.getPath());
-        } catch (IOException | ParseException ex) {
-            throw new GradleException(String.format("Failed to compile IDL file %s", idlFile), ex);
-        } finally {
-            if (idl != null) {
-                try {
-                    idl.close();
-                } catch (IOException ioe) {
-                    // ignore
-                }
-            }
+            Transformation transformation = new TransformationImpl();
+            Collection<File> inputs = getSource().getFiles();
+            File outputDir = getOutputDir();
+            ClassLoader resourceLoader = getRuntimeClassLoader(getProject());
+            int processedFileCount = transformation.generateProtocolFiles(inputs, outputDir, resourceLoader);
+            setDidWork(processedFileCount > 0);
+        } catch (IOException ex) {
+            throw new GradleException(ex.getMessage(), ex);
         }
     }
 
