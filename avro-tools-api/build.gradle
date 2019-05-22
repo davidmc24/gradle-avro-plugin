@@ -2,3 +2,5 @@ plugins {
     id "java-library"
     id "idea"
 }
+
+sourceCompatibility = 1.7

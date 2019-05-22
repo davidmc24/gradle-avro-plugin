@@ -21,4 +21,7 @@
     <allow pkg="org.gradle.util"/>
     <!-- Ideally using internal packages wouldn't be needed -->
     <allow pkg="org.gradle.api.internal"/>
+
+    <allow pkg="com.commercehub.avro.tools.api"/>
+    <allow pkg="com.commercehub.avro.tools.base"/>
 </import-control>

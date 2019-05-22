@@ -1,0 +1,18 @@
+plugins {
+    id "java-library"
+    id "idea"
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api project(":avro-tools-base")
+    // TODO: is tools actually needed
+    implementation "org.apache.avro:avro-compiler:1.6.0"
+//    implementation "org.apache.avro:avro-tools:1.6.0"
+    // TODO: tests
+}
+
+sourceCompatibility = 1.7

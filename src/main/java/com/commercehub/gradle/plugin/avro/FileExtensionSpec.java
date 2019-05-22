@@ -20,22 +20,30 @@ import org.gradle.api.specs.Spec;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 class FileExtensionSpec implements Spec<File> {
+    private final boolean contains;
     private final Set<String> extensions;
 
-    FileExtensionSpec(String... extensions) {
-        this.extensions = new HashSet<String>(Arrays.asList(extensions));
+    FileExtensionSpec(boolean contains, Collection<String> extensions) {
+        this.contains = contains;
+        this.extensions = new LinkedHashSet<String>(extensions);
     }
 
-    FileExtensionSpec(Collection<String> extensions) {
-        this.extensions = new HashSet<String>(extensions);
+
+    FileExtensionSpec(boolean contains, String... extensions) {
+        this(contains, Arrays.asList(extensions));
+    }
+
+
+    FileExtensionSpec(String... extensions) {
+        this(true, extensions);
     }
 
     @Override
     public boolean isSatisfiedBy(File file) {
-        return extensions.contains(FilenameUtils.getExtension(file.getName()));
+        return contains == extensions.contains(FilenameUtils.getExtension(file.getName()));
     }
 }

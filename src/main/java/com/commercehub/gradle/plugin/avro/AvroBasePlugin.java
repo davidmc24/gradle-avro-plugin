@@ -33,31 +33,32 @@ public class AvroBasePlugin implements Plugin<Project> {
 
     private static void configureExtension(final Project project) {
         final AvroExtension avroExtension = project.getExtensions().create(AVRO_EXTENSION_NAME, DefaultAvroExtension.class);
-        ConventionMapping extensionMapping = conventionMapping(avroExtension);
-        extensionMapping.map(OPTION_STRING_TYPE, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return DEFAULT_STRING_TYPE;
-            }
-        });
-        extensionMapping.map(OPTION_FIELD_VISIBILITY, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return DEFAULT_FIELD_VISIBILITY;
-            }
-        });
-        extensionMapping.map(OPTION_CREATE_SETTERS, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return DEFAULT_CREATE_SETTERS;
-            }
-        });
-        extensionMapping.map(OPTION_ENABLE_DECIMAL_LOGICAL_TYPE, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE;
-            }
-        });
+        // TODO: CONSIDER WHETHER TO SUPPORT DEFAULTS
+//        ConventionMapping extensionMapping = conventionMapping(avroExtension);
+//        extensionMapping.map(OPTION_STRING_TYPE, new Callable<String>() {
+//            @Override
+//            public String call() throws Exception {
+//                return DEFAULT_STRING_TYPE;
+//            }
+//        });
+//        extensionMapping.map(OPTION_FIELD_VISIBILITY, new Callable<String>() {
+//            @Override
+//            public String call() throws Exception {
+//                return DEFAULT_FIELD_VISIBILITY;
+//            }
+//        });
+//        extensionMapping.map(OPTION_CREATE_SETTERS, new Callable<Boolean>() {
+//            @Override
+//            public Boolean call() throws Exception {
+//                return DEFAULT_CREATE_SETTERS;
+//            }
+//        });
+//        extensionMapping.map(OPTION_ENABLE_DECIMAL_LOGICAL_TYPE, new Callable<Boolean>() {
+//            @Override
+//            public Boolean call() throws Exception {
+//                return DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE;
+//            }
+//        });
         project.getTasks().withType(GenerateAvroJavaTask.class).all(new Action<GenerateAvroJavaTask>() {
             @Override
             public void execute(GenerateAvroJavaTask task) {

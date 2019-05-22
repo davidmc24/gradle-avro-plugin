@@ -15,8 +15,6 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
-import org.apache.avro.compiler.specific.SpecificCompiler.FieldVisibility;
-import org.apache.avro.generic.GenericData.StringType;
 import org.gradle.api.plugins.JavaPlugin;
 
 /**
@@ -28,11 +26,12 @@ import org.gradle.api.plugins.JavaPlugin;
 class Constants {
     static final String UTF8_ENCODING = "UTF-8";
 
-    static final String DEFAULT_STRING_TYPE = StringType.String.name();
-    static final String DEFAULT_FIELD_VISIBILITY = FieldVisibility.PUBLIC_DEPRECATED.name();
-    static final boolean DEFAULT_CREATE_SETTERS = true;
-    static final boolean DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE = true;
-    static final boolean DEFAULT_VALIDATE_DEFAULTS = false;
+    // TODO: consider if I want to preserve any of these
+//    static final String DEFAULT_STRING_TYPE = StringType.String.name();
+//    static final String DEFAULT_FIELD_VISIBILITY = FieldVisibility.PUBLIC_DEPRECATED.name();
+//    static final boolean DEFAULT_CREATE_SETTERS = true;
+//    static final boolean DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE = true;
+//    static final boolean DEFAULT_VALIDATE_DEFAULTS = false;
 
     static final String SCHEMA_EXTENSION = "avsc";
     static final String PROTOCOL_EXTENSION = "avpr";

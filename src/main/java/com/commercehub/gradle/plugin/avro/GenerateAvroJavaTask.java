@@ -15,13 +15,10 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
+import com.commercehub.avro.tools.api.AvroTransformer;
 import com.commercehub.avro.tools.api.CompilerOptions;
-import com.commercehub.avro.tools.api.Transformation;
-import com.commercehub.avro.tools.impl.TransformationImpl;
-import org.apache.avro.Protocol;
-import org.apache.avro.compiler.specific.SpecificCompiler;
-import org.apache.avro.generic.GenericData;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
@@ -30,23 +27,33 @@ import org.gradle.api.tasks.TaskAction;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collection;
+import java.util.Set;
 
-import static com.commercehub.gradle.plugin.avro.Constants.*;
+import static com.commercehub.gradle.plugin.avro.Constants.PROTOCOL_EXTENSION;
+import static com.commercehub.gradle.plugin.avro.Constants.SCHEMA_EXTENSION;
 
 /**
- * Task to generate Java source files based on Avro protocol files and Avro schema files using {@link Protocol} and
- * {@link SpecificCompiler}.
+ * Task to generate Java source files based on Avro protocol files and Avro schema files using {@code org.apache.avro.Protocol} and
+ * {@code org.apache.avro.compiler.specific.SpecificCompiler}.
  */
 @CacheableTask
 public class GenerateAvroJavaTask extends OutputDirTask {
     private String outputCharacterEncoding;
-    private String stringType = DEFAULT_STRING_TYPE;
-    private String fieldVisibility = DEFAULT_FIELD_VISIBILITY;
+    private String stringType;
+    private String fieldVisibility;
     private String templateDirectory;
-    private boolean createSetters = DEFAULT_CREATE_SETTERS;
-    private boolean enableDecimalLogicalType = DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE;
-    private boolean validateDefaults = DEFAULT_VALIDATE_DEFAULTS;
+    private boolean createSetters;
+    private boolean enableDecimalLogicalType;
+    private boolean validateDefaults;
+
+    // TODO: consider if any defaults are needed
+//    private String outputCharacterEncoding;
+//    private String stringType = DEFAULT_STRING_TYPE;
+//    private String fieldVisibility = DEFAULT_FIELD_VISIBILITY;
+//    private String templateDirectory;
+//    private boolean createSetters = DEFAULT_CREATE_SETTERS;
+//    private boolean enableDecimalLogicalType = DEFAULT_ENABLE_DECIMAL_LOGICAL_TYPE;
+//    private boolean validateDefaults = DEFAULT_VALIDATE_DEFAULTS;
 
     @Optional
     @Input
@@ -67,10 +74,6 @@ public class GenerateAvroJavaTask extends OutputDirTask {
         return stringType;
     }
 
-    public void setStringType(GenericData.StringType stringType) {
-        setStringType(stringType.name());
-    }
-
     public void setStringType(String stringType) {
         this.stringType = stringType;
     }
@@ -82,10 +85,6 @@ public class GenerateAvroJavaTask extends OutputDirTask {
 
     public void setFieldVisibility(String fieldVisibility) {
         this.fieldVisibility = fieldVisibility;
-    }
-
-    public void setFieldVisibility(SpecificCompiler.FieldVisibility fieldVisibility) {
-        setFieldVisibility(fieldVisibility.name());
     }
 
     @Optional
@@ -136,15 +135,36 @@ public class GenerateAvroJavaTask extends OutputDirTask {
         options.setTemplateDirectory(getTemplateDirectory());
         options.setValidateDefaults(isValidateDefaults());
 
+        getLogger().debug("Using outputCharacterEncoding {}", options.getOutputCharacterEncoding());
+        getLogger().debug("Using stringType {}", options.getStringType());
+        getLogger().debug("Using fieldVisibility {}", options.getFieldVisibility());
+        getLogger().debug("Using templateDirectory '{}'", options.getTemplateDirectory());
+        getLogger().debug("Using createSetters {}", options.isCreateSetters());
+        getLogger().debug("Using enableDecimalLogicalType {}", options.isEnableDecimalLogicalType());
+        getLogger().debug("Using validateDefaults {}", options.isValidateDefaults());
+
+        AvroTransformer transformer = TransformerUtil.getTransfomer();
         try {
-            Transformation transformation = new TransformationImpl();
-            Collection<File> inputs = getSource().getFiles();
+            checkForUnsupportedFiles();
+            Set<File> protocolFiles = filterSources(new FileExtensionSpec(PROTOCOL_EXTENSION)).getFiles();
+            Set<File> schemaFiles = filterSources(new FileExtensionSpec(SCHEMA_EXTENSION)).getFiles();
+            getLogger().info("Found {} files", protocolFiles.size() + schemaFiles.size());
             File outputDir = getOutputDir();
             File baseFile = getProject().getProjectDir();
-            int processedFileCount = transformation.generateJavaSourceFiles(inputs, outputDir, baseFile, options);
+            int processedFileCount = 0;
+            processedFileCount += transformer.transformProtocolToJavaSource(protocolFiles, outputDir, baseFile, options);
+            processedFileCount += transformer.transformSchemaToJavaSource(schemaFiles, outputDir, baseFile, options);
             setDidWork(processedFileCount > 0);
         } catch (IOException ex) {
             throw new GradleException(ex.getMessage(), ex);
+        }
+    }
+
+    private void checkForUnsupportedFiles() throws IOException {
+        FileCollection unsupportedFiles = filterSources(new FileExtensionSpec(false, PROTOCOL_EXTENSION, SCHEMA_EXTENSION));
+        if (!unsupportedFiles.isEmpty()) {
+            throw new IOException(
+                String.format("Unsupported file extension for the following files: %s", unsupportedFiles));
         }
     }
 }

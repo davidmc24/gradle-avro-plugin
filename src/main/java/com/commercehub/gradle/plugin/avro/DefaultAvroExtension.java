@@ -15,9 +15,6 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
-import org.apache.avro.compiler.specific.SpecificCompiler;
-import org.apache.avro.generic.GenericData;
-
 import java.nio.charset.Charset;
 
 public class DefaultAvroExtension implements AvroExtension {
@@ -51,10 +48,6 @@ public class DefaultAvroExtension implements AvroExtension {
         this.stringType = stringType;
     }
 
-    public void setStringType(GenericData.StringType stringType) {
-        setStringType(stringType.name());
-    }
-
     @Override
     public String getFieldVisibility() {
         return fieldVisibility;
@@ -62,10 +55,6 @@ public class DefaultAvroExtension implements AvroExtension {
 
     public void setFieldVisibility(String fieldVisibility) {
         this.fieldVisibility = fieldVisibility;
-    }
-
-    public void setFieldVisibility(SpecificCompiler.FieldVisibility fieldVisibility) {
-        setFieldVisibility(fieldVisibility.name());
     }
 
     @Override

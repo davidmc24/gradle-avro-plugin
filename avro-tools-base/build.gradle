@@ -1,0 +1,15 @@
+plugins {
+    id "java-library"
+    id "idea"
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api project(":avro-tools-api")
+    implementation "org.slf4j:slf4j-api:1.7.25"
+}
+
+sourceCompatibility = 1.7
