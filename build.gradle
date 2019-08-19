@@ -3,7 +3,7 @@ plugins {
     id "checkstyle"
     id "codenarc"
     id "idea"
-    id "maven"
+    id "maven-publish"
     id "com.gradle.plugin-publish" version "0.9.1"
 }
 
@@ -24,7 +24,7 @@ tasks.withType(AbstractCompile) {
 }
 sourceCompatibility = 1.6
 
-version = "0.8.1"
+version = "0.8.1-SNAPSHOT"
 group = "com.commercehub.gradle.plugin"
 
 pluginBundle {
@@ -43,8 +43,32 @@ pluginBundle {
         }
     }
     mavenCoordinates {
-        groupId = "com.commercehub.gradle.plugin"
-        artifactId = "gradle-avro-plugin"
+        groupId = group
+        artifactId = rootProject.name
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = rootProject.name
+            version = version
+
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
     }
 }
 
