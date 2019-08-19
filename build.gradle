@@ -104,3 +104,7 @@ codenarc {
     toolVersion = "0.24.1"
     config = project.resources.text.fromFile("config/codenarc/codenarc.groovy")
 }
+
+wrapper {
+  gradleVersion = '5.6'
+}
