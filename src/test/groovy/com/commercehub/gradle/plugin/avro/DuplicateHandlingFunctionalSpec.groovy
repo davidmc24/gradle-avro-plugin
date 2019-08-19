@@ -20,9 +20,9 @@ class DuplicateHandlingFunctionalSpec extends FunctionalSpec {
         then:
         result.task(":generateAvroJava").outcome == SUCCESS
         result.task(":compileJava").outcome == SUCCESS
-        projectFile("build/classes/main/example/Person.class").file
-        projectFile("build/classes/main/example/Cat.class").file
-        projectFile("build/classes/main/example/Gender.class").file
+        projectFile("build/classes/java/main/example/Person.class").file
+        projectFile("build/classes/java/main/example/Cat.class").file
+        projectFile("build/classes/java/main/example/Gender.class").file
     }
 
     def "Duplicate record definition succeeds if definition identical"() {
@@ -35,9 +35,9 @@ class DuplicateHandlingFunctionalSpec extends FunctionalSpec {
         then:
         result.task(":generateAvroJava").outcome == SUCCESS
         result.task(":compileJava").outcome == SUCCESS
-        projectFile("build/classes/main/example/Person.class").file
-        projectFile("build/classes/main/example/Fish.class").file
-        projectFile("build/classes/main/example/Gender.class").file
+        projectFile("build/classes/java/main/example/Person.class").file
+        projectFile("build/classes/java/main/example/Fish.class").file
+        projectFile("build/classes/java/main/example/Gender.class").file
     }
 
     def "Duplicate enum definition fails if definition differs"() {
@@ -49,7 +49,7 @@ class DuplicateHandlingFunctionalSpec extends FunctionalSpec {
 
         then:
         result.task(":generateAvroJava").outcome == FAILED
-        result.standardError.contains("Found conflicting definition of type example.Gender in "
+        result.output.contains("Found conflicting definition of type example.Gender in "
             + "[src/main/avro/duplicate/Dog.avsc, src/main/avro/duplicate/Person.avsc]")
     }
 
@@ -62,7 +62,7 @@ class DuplicateHandlingFunctionalSpec extends FunctionalSpec {
 
         then:
         result.task(":generateAvroJava").outcome == FAILED
-        result.standardError.contains("Found conflicting definition of type example.Person in "
+        result.output.contains("Found conflicting definition of type example.Person in "
             + "[src/main/avro/duplicate/Person.avsc, src/main/avro/duplicate/Spider.avsc]")
     }
 

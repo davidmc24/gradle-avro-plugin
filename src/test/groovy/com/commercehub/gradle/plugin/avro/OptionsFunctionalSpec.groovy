@@ -164,7 +164,7 @@ class OptionsFunctionalSpec extends FunctionalSpec {
 
         then:
         result.task(":generateAvroJava").outcome == FAILED
-        result.standardError.contains("Invalid stringType 'badValue'.  Value values are: [CharSequence, String, Utf8]")
+        result.output.contains("Invalid stringType 'badValue'.  Value values are: [CharSequence, String, Utf8]")
     }
 
     def "rejects unsupported fieldVisibility values"() {
@@ -181,6 +181,6 @@ class OptionsFunctionalSpec extends FunctionalSpec {
 
         then:
         result.task(":generateAvroJava").outcome == FAILED
-        result.standardError.contains("Invalid fieldVisibility 'badValue'.  Value values are: [PUBLIC, PUBLIC_DEPRECATED, PRIVATE]")
+        result.output.contains("Invalid fieldVisibility 'badValue'.  Value values are: [PUBLIC, PUBLIC_DEPRECATED, PRIVATE]")
     }
 }
