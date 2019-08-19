@@ -27,6 +27,11 @@ sourceCompatibility = 1.6
 version = "0.8.1-SNAPSHOT"
 group = "com.commercehub.gradle.plugin"
 
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 pluginBundle {
     website = "https://github.com/commercehub-oss/gradle-avro-plugin"
     vcsUrl = "https://github.com/commercehub-oss/gradle-avro-plugin"
