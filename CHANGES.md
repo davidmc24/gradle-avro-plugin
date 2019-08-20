@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.8.1
+* Compatible at runtime with Gradle 5; no functional changes.  Compiled with Gradle 5.6.
+
 ## 0.8.0
 * Add support for Java 6 (#21)
 
