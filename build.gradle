@@ -4,7 +4,8 @@ plugins {
     id "codenarc"
     id "idea"
     id "maven-publish"
-    id "com.gradle.plugin-publish" version "0.9.1"
+    id "java-gradle-plugin"
+    id "com.jfrog.bintray" version "1.8.1"
 }
 
 repositories {
@@ -32,47 +33,63 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-pluginBundle {
-    website = "https://github.com/commercehub-oss/gradle-avro-plugin"
-    vcsUrl = "https://github.com/commercehub-oss/gradle-avro-plugin"
-    description = "A Gradle plugin to allow easily performing Java code generation for Apache Avro. It supports JSON schema declaration files, JSON protocol declaration files, and Avro IDL files."
-    tags = ["serialization", "avro"]
-    plugins {
-        avro {
-            id = "com.commercehub.gradle.plugin.avro"
-            displayName = "Avro Plugin"
-        }
-        avroBase {
-            id = "com.commercehub.gradle.plugin.avro-base"
-            displayName = "Avro Base Plugin"
-        }
-    }
-    mavenCoordinates {
-        groupId = group
-        artifactId = rootProject.name
-    }
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    classifier "sources"
+    extension "jar"
 }
 
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier = 'sources'
-}
-
-task javadocJar(type: Jar) {
-    from javadoc
-    archiveClassifier = 'javadoc'
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier "javadoc"
+    extension "jar"
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            groupId = group
-            artifactId = rootProject.name
-            version = version
-
+        mainMaven(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    // dryRun = true
+    // publish = true
+    user = project.hasProperty("bintrayUserName") ? bintrayUserName : null
+    key = project.hasProperty("bintrayApiKey") ? bintrayApiKey : null
+    publications = ["mainMaven", "avroBasePluginMarkerMaven", "avroPluginMarkerMaven"]
+    pkg {
+        repo = "main"
+        name = project.name
+        userOrg = "commercehub-oss"
+        licenses = ["Apache-2.0"]
+        desc = "A Gradle plugin to allow easily performing Java code generation for Apache Avro. It supports JSON schema declaration files, JSON protocol declaration files, and Avro IDL files."
+        websiteUrl = "https://github.com/commercehub-oss/gradle-avro-plugin"
+        issueTrackerUrl = 'https://github.com/commercehub-oss/gradle-avro-plugin/issues'
+        vcsUrl = "https://github.com/commercehub-oss/gradle-avro-plugin"
+        labels = ["serialization", "avro"]
+        githubRepo = "commercehub-oss/gradle-avro-plugin"
+        version {
+            name = project.version
+            vcsTag = project.version
+        }
+    }
+}
+
+bintrayUpload.dependsOn build, { generatePomFileForAvroBasePluginMarkerMavenPublication }, { generatePomFileForAvroPluginMarkerMavenPublication }
+
+gradlePlugin {
+    plugins {
+        avro {
+            id = "com.commercehub.gradle.plugin.avro"
+            implementationClass = "com.commercehub.gradle.plugin.avro.AvroPlugin"
+        }
+        avroBase {
+            id = "com.commercehub.gradle.plugin.avro-base"
+            implementationClass = "com.commercehub.gradle.plugin.avro.AvroBasePlugin"
         }
     }
 }
@@ -134,8 +151,4 @@ checkstyleMain {
 codenarc {
     toolVersion = "0.24.1"
     config = project.resources.text.fromFile("config/codenarc/codenarc.groovy")
-}
-
-wrapper {
-  gradleVersion = '5.6'
 }
