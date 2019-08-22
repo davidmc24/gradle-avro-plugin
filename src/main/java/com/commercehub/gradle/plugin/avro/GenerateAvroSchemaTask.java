@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018 Commerce Technologies, LLC.
+ * Copyright © 2018-2019 Commerce Technologies, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Pattern;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.gradle.api.GradleException;
@@ -22,10 +25,6 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.specs.NotSpec;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.TaskAction;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.regex.Pattern;
 
 import static com.commercehub.gradle.plugin.avro.Constants.PROTOCOL_EXTENSION;
 import static com.commercehub.gradle.plugin.avro.Constants.SCHEMA_EXTENSION;
@@ -62,7 +61,7 @@ public class GenerateAvroSchemaTask extends OutputDirTask {
             Protocol protocol = Protocol.parse(sourceFile);
             for (Schema schema : protocol.getTypes()) {
                 String path = schema.getNamespace().replaceAll(Pattern.quote("."), "/");
-                File schemaFile = new File(getOutputDir(), path + "/" + schema.getName() + "." + SCHEMA_EXTENSION);
+                File schemaFile = new File(getOutputDir().get().getAsFile(), path + "/" + schema.getName() + "." + SCHEMA_EXTENSION);
                 String schemaJson = schema.toString(true);
                 FileUtils.writeJsonFile(schemaFile, schemaJson);
                 getLogger().debug("Wrote {}", schemaFile.getPath());

@@ -15,23 +15,22 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
-import org.gradle.api.specs.Spec;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.gradle.api.specs.Spec;
 
 class FileExtensionSpec implements Spec<File> {
     private final Set<String> extensions;
 
     FileExtensionSpec(String... extensions) {
-        this.extensions = new HashSet<String>(Arrays.asList(extensions));
+        this.extensions = new HashSet<>(Arrays.asList(extensions));
     }
 
     FileExtensionSpec(Collection<String> extensions) {
-        this.extensions = new HashSet<String>(extensions);
+        this.extensions = new HashSet<>(extensions);
     }
 
     @Override

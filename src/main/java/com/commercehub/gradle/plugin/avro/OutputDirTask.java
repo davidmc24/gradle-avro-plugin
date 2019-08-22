@@ -1,5 +1,5 @@
 /**
- * Copyright © 2013 Commerce Technologies, LLC.
+ * Copyright © 2013-2019 Commerce Technologies, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.commercehub.gradle.plugin.avro;
 
+import java.io.File;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.specs.Spec;
@@ -22,15 +24,18 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.SourceTask;
 
-import java.io.File;
-
+import static com.commercehub.gradle.plugin.avro.GradleCompatibility.createDirectoryProperty;
 import static org.gradle.api.tasks.PathSensitivity.RELATIVE;
 
 class OutputDirTask extends SourceTask {
-    private File outputDir;
+    private final DirectoryProperty outputDir;
+
+    protected OutputDirTask() {
+        this.outputDir = createDirectoryProperty(getProject());
+    }
 
     public void setOutputDir(File outputDir) {
-        this.outputDir = outputDir;
+        this.outputDir.set(outputDir);
         getOutputs().dir(outputDir);
     }
 
@@ -40,7 +45,7 @@ class OutputDirTask extends SourceTask {
     }
 
     @OutputDirectory
-    protected File getOutputDir() {
+    protected DirectoryProperty getOutputDir() {
         return outputDir;
     }
 

@@ -1,6 +1,16 @@
 # Change Log
 
 ## Unreleased
+* Use reproducible file order for plugin archives
+* Eliminate usage of internal conventions API, using new Lazy Configuration approach instead; requires Gradle 4.4+
+  * Technically, the APIs needed are available in Gradle 4.3, but there is a bug related to un-set `Property` instances in 4.3 and 4.3.1; see https://github.com/gradle/gradle/issues/3879
+* Cleaned up compatibility code for older versions of Gradle 
+* Built using Gradle 5.6
+* Upgrade Spock from 1.2 to 1.3
+* Upgrade Checkstyle from 6.1.1 to 8.23 and adjust rules used
+* Upgrade Codenarc from 1.0 to 1.4 and adjust rules used
+* Change source compatibility to 8
+* Modernized for Java 8
 
 ## 0.17.0
 * Built using Avro 1.9.0
@@ -71,6 +81,9 @@
 * Built using Avro 1.8.1 (#23)
 * Built using Gradle 2.13
 * Added version cross-compatibility testing
+
+## 0.8.1
+* Compatible at runtime with Gradle 5; no functional changes.  Compiled with Gradle 5.6.
 
 ## 0.8.0
 * Add support for Java 6 (#21)
