@@ -15,14 +15,18 @@
  */
 package com.commercehub.avro.depresolver;
 
-import org.apache.avro.Schema;
-
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-class ProcessingState {
-    private final Map<String, TypeState> typeStates = new HashMap<>();
+class ProcessingState<T> {
+    private final Map<String, TypeState<T>> typeStates = new HashMap<>();
     private final Set<FileState> delayedFiles = new LinkedHashSet<>();
     private final Queue<FileState> filesToProcess;
     
@@ -30,10 +34,10 @@ class ProcessingState {
         filesToProcess = sourceFiles.stream().map(FileState::new).collect(Collectors.toCollection(LinkedList::new));
     }
 
-    Map<String, Schema> determineParserTypes(FileState fileState) {
+    Map<String, SchemaWrapper<T>> determineParserTypes(FileState fileState) {
         Set<String> duplicateTypeNames = fileState.getDuplicateTypeNames();
-        Map<String, Schema> types = new HashMap<>();
-        for (TypeState typeState : typeStates.values()) {
+        Map<String, SchemaWrapper<T>> types = new HashMap<>();
+        for (TypeState<T> typeState : typeStates.values()) {
             String typeName = typeState.getName();
             if (!duplicateTypeNames.contains(typeName)) {
                 types.put(typeState.getName(), typeState.getSchema());
@@ -42,9 +46,9 @@ class ProcessingState {
         return types;
     }
 
-    void processTypeDefinitions(FileState fileState, Map<String, Schema> newTypes) {
+    void processTypeDefinitions(FileState fileState, Map<String, SchemaWrapper<T>> newTypes) {
         File sourceFile = fileState.getSourceFile();
-        newTypes.forEach((String typeName, Schema schema) -> {
+        newTypes.forEach((String typeName, SchemaWrapper schema) -> {
             typeStates.computeIfAbsent(typeName, TypeState::new).processTypeDefinition(sourceFile, schema);
         });
         fileState.clearError();

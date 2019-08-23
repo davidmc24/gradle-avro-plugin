@@ -1,0 +1,12 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api 'org.slf4j:slf4j-api:1.7.28'
+}

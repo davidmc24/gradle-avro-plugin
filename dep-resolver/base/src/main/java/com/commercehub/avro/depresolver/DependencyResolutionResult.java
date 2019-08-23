@@ -1,15 +1,17 @@
 package com.commercehub.avro.depresolver;
 
-import org.apache.avro.Schema;
-
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-class DependencyResolutionResult {
-    private SortedSet<Schema> schemas = new TreeSet<>(Comparator.comparing(Schema::getFullName));
+class DependencyResolutionResult<T> {
+    private SortedSet<SchemaWrapper<T>> schemas = new TreeSet<>();
     private SortedMap<File, String> fileErrors = new TreeMap<>();
 
-    void addSchema(Schema schema) {
+    void addSchema(SchemaWrapper<T> schema) {
         schemas.add(schema);
     }
 
@@ -17,7 +19,7 @@ class DependencyResolutionResult {
         fileErrors.put(file, errorMessage);
     }
 
-    SortedSet<Schema> getSchemas() {
+    SortedSet<SchemaWrapper<T>> getSchemas() {
         return Collections.unmodifiableSortedSet(schemas);
     }
 

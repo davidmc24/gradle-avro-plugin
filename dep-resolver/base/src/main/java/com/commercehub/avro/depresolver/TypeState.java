@@ -15,22 +15,20 @@
  */
 package com.commercehub.avro.depresolver;
 
-import org.apache.avro.Schema;
-
 import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 
-class TypeState {
+class TypeState<T> {
     private final String name;
     private final Set<File> locations = new TreeSet<>();
-    private Schema schema;
+    private SchemaWrapper<T> schema;
 
     TypeState(String name) {
         this.name = name;
     }
 
-    void processTypeDefinition(File location, Schema schema) {
+    void processTypeDefinition(File location, SchemaWrapper<T> schema) {
         locations.add(location);
         if (this.schema == null) {
             this.schema = schema;
@@ -43,7 +41,7 @@ class TypeState {
         return name;
     }
 
-    Schema getSchema() {
+    SchemaWrapper<T> getSchema() {
         return schema;
     }
 }
