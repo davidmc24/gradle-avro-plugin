@@ -78,6 +78,10 @@ abstract class FunctionalSpec extends Specification {
         buildFile << "apply plugin: \"${pluginId}\"\n"
     }
 
+    protected void addFileDependency(String dependencySpec) {
+        buildFile << "dependencies { compile files('${dependencySpec}')}\n"
+    }
+
     protected void addDependency(String dependencySpec) {
         buildFile << "dependencies { compile \"${dependencySpec}\" }\n"
     }

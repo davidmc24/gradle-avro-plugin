@@ -70,6 +70,23 @@ class AvroPluginFunctionalSpec extends FunctionalSpec {
         projectFile(buildOutputClassPath("org/apache/avro/Node.class")).file
     }
 
+    def "can generate and compile java files from external IDL dependency"() {
+        given:
+        copyResource("importExternal.avdl", avroDir)
+        addFileDependency(getClass().getResource("external-avdl.jar").path)
+
+        when:
+        def result = run()
+
+        then:
+        taskInfoAbsent || result.task(":generateAvroProtocol").outcome == SUCCESS
+        taskInfoAbsent || result.task(":generateAvroJava").outcome == SUCCESS
+        taskInfoAbsent || result.task(":compileJava").outcome == SUCCESS
+        projectFile(buildOutputClassPath("org/apache/avro/external/common/Header.class")).file
+        projectFile(buildOutputClassPath("org/apache/avro/external/common/RequestComponents.class")).file
+        projectFile(buildOutputClassPath("org/apache/avro/external/Request.class")).file
+    }
+
     def "supports json schema files in subdirectories"() {
         given:
         copyResource("user.avsc", avroSubDir)

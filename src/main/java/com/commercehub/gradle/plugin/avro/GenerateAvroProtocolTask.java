@@ -106,6 +106,6 @@ public class GenerateAvroProtocolTask extends OutputDirTask {
             getLogger().debug("No configuration found with name {}; defaulting to system classloader", configurationName);
         }
         return urls.isEmpty() ? ClassLoader.getSystemClassLoader()
-                : new URLClassLoader(urls.toArray(new URL[0]), ClassLoader.getSystemClassLoader());
+                : new AvroClassLoader(urls.toArray(new URL[0]), ClassLoader.getSystemClassLoader());
     }
 }
