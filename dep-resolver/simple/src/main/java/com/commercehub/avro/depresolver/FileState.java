@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.commercehub.gradle.plugin.avro;
+package com.commercehub.avro.depresolver;
 
 import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
 
 class FileState implements Comparable<FileState> {
-    private final File file;
-    private final String path;
+    private final File sourceFile;
     private String errorMessage;
-    private Set<String> duplicateTypeNames = new TreeSet<>();
+    private Set<String> duplicateTypeNames = new TreeSet<String>();
 
-    FileState(File file, String path) {
-        this.file = file;
-        this.path = path;
+    FileState(File sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
-    File getFile() {
-        return file;
+    File getSourceFile() {
+        return sourceFile;
     }
 
     Set<String> getDuplicateTypeNames() {
@@ -50,21 +48,17 @@ class FileState implements Comparable<FileState> {
         duplicateTypeNames.add(typeName);
     }
 
-    public boolean containsDuplicateTypeName(String typeName) {
+    boolean containsDuplicateTypeName(String typeName) {
         return duplicateTypeNames.contains(typeName);
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public String getErrorMessage() {
+    String getErrorMessage() {
         return errorMessage;
     }
 
     @Override
     public int compareTo(FileState o) {
-        return path.compareTo(o.getPath());
+        return sourceFile.compareTo(o.sourceFile);
     }
 
     @Override
@@ -76,11 +70,15 @@ class FileState implements Comparable<FileState> {
             return false;
         }
         FileState fileState = (FileState) o;
-        return path.equals(fileState.path);
+        return sourceFile.equals(fileState.sourceFile);
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return sourceFile.hashCode();
+    }
+
+    String getPath() {
+        return sourceFile.getPath();
     }
 }

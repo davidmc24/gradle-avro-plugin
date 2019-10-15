@@ -1,4 +1,4 @@
-package com.commercehub.avro.depresolver.avro190;
+package com.commercehub.avro.depresolver.avro153;
 
 import com.commercehub.avro.depresolver.AvroSchemaParseException;
 import com.commercehub.avro.depresolver.DuplicateAvroTypeException;

@@ -29,7 +29,8 @@ public abstract class SchemaParserWrapper<T> {
         ));
     }
 
-    protected abstract void addTypes(Map<String, SchemaWrapper<T>> parserTypes);
+    protected abstract void addTypes(Map<String, SchemaWrapper<T>> parserTypes) throws UnsupportedOperationException;
     protected abstract SchemaWrapper<T> parse(File sourceFile) throws AvroSchemaParseException;
-    protected abstract Map<String, SchemaWrapper<T>> getTypes();
+    protected abstract Map<String, SchemaWrapper<T>> getTypes(SchemaWrapper<T> schemaWrapper);
+    protected abstract boolean isTypeConfigurationSupported();
 }

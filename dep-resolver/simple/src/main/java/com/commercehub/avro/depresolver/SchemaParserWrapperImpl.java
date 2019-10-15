@@ -1,12 +1,5 @@
-package com.commercehub.avro.depresolver.avro190;
+package com.commercehub.avro.depresolver;
 
-import com.commercehub.avro.depresolver.AvroSchemaParseException;
-import com.commercehub.avro.depresolver.DuplicateAvroTypeException;
-import com.commercehub.avro.depresolver.NullPointerAvroException;
-import com.commercehub.avro.depresolver.SchemaParserWrapper;
-import com.commercehub.avro.depresolver.SchemaWrapper;
-import com.commercehub.avro.depresolver.UnknownAvroTypeException;
-import com.commercehub.avro.depresolver.WrapperFactory;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 
@@ -15,29 +8,19 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-class SchemaParserWrapperImpl extends SchemaParserWrapper<Schema> {
+class SchemaParserWrapperImpl {
     private static Pattern ERROR_UNKNOWN_TYPE = Pattern.compile("(?i).*(undefined name|not a defined name).*");
     private static Pattern ERROR_DUPLICATE_TYPE = Pattern.compile("Can't redefine: (.*)");
 
     private final Schema.Parser parser = new Schema.Parser();
 
-    SchemaParserWrapperImpl(WrapperFactory<Schema> wrapperFactory) {
-        super(wrapperFactory);
-    }
-
-    @Override
-    protected void addTypes(Map<String, SchemaWrapper<Schema>> types) {
+    void addTypes(Map<String, SchemaWrapperImpl> types) {
         parser.addTypes(unwrapMap(types));
     }
 
-    @Override
-    protected boolean isTypeConfigurationSupported() {
-        return true;
-    }
-
-    @Override
-    protected SchemaWrapper<Schema> parse(File sourceFile) throws AvroSchemaParseException {
+    SchemaWrapperImpl parse(File sourceFile) throws AvroSchemaParseException {
         try {
             return wrap(parser.parse(sourceFile));
         } catch (SchemaParseException ex) {
@@ -59,8 +42,25 @@ class SchemaParserWrapperImpl extends SchemaParserWrapper<Schema> {
         }
     }
 
-    @Override
-    protected Map<String, SchemaWrapper<Schema>> getTypes(SchemaWrapper<Schema> schemaWrapper) {
+    Map<String, SchemaWrapperImpl> getTypes() {
         return wrapMap(parser.getTypes());
+    }
+
+    private SchemaWrapperImpl wrap(Schema schema) {
+        return new SchemaWrapperImpl(schema);
+    }
+
+    private Map<String, Schema> unwrapMap(Map<String, SchemaWrapperImpl> wrappedMap) {
+        return wrappedMap.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().unwrap()
+        ));
+    }
+
+    private Map<String, SchemaWrapperImpl> wrapMap(Map<String, Schema> unwrappedMap) {
+        return unwrappedMap.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> wrap(entry.getValue())
+        ));
     }
 }

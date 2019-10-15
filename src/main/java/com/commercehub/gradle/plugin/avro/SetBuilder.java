@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 class SetBuilder<T> {
-    private Set<T> set = new HashSet<T>();
+    private Set<T> set = new HashSet<>();
 
     SetBuilder<T> add(T e) {
         set.add(e);

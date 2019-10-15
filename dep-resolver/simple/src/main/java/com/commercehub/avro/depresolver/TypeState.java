@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.commercehub.gradle.plugin.avro;
+package com.commercehub.avro.depresolver;
 
+import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.avro.Schema;
-import org.gradle.api.GradleException;
 
 class TypeState {
     private final String name;
-    private final Set<String> locations = new TreeSet<>();
-    private Schema schema;
+    private final Set<File> locations = new TreeSet<>();
+    private SchemaWrapperImpl schema;
 
     TypeState(String name) {
         this.name = name;
     }
 
-    void processTypeDefinition(String path, Schema schemaToProcess) {
-        locations.add(path);
+    void processTypeDefinition(File location, SchemaWrapperImpl schema) {
+        locations.add(location);
         if (this.schema == null) {
-            this.schema = schemaToProcess;
-        } else if (!this.schema.equals(schemaToProcess)) {
-            throw new GradleException(String.format("Found conflicting definition of type %s in %s", name, locations));
+            this.schema = schema;
+        } else if (!this.schema.equals(schema)) {
+            throw new RuntimeException(String.format("Found conflicting definition of type %s in %s", name, locations));
         } // Otherwise duplicate declaration of identical schema; nothing to do
     }
 
@@ -42,7 +41,7 @@ class TypeState {
         return name;
     }
 
-    Schema getSchema() {
+    SchemaWrapperImpl getSchema() {
         return schema;
     }
 }

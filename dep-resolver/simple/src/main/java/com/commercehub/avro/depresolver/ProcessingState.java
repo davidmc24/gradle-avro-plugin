@@ -13,33 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.commercehub.gradle.plugin.avro;
+package com.commercehub.avro.depresolver;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import org.apache.avro.Schema;
-import org.gradle.api.Project;
+import java.util.stream.Collectors;
 
 class ProcessingState {
     private final Map<String, TypeState> typeStates = new HashMap<>();
     private final Set<FileState> delayedFiles = new LinkedHashSet<>();
-    private final Queue<FileState> filesToProcess = new LinkedList<>();
-    private int processedTotal;
-
-    ProcessingState(Set<File> files, Project project) {
-        for (File file : files) {
-            filesToProcess.add(new FileState(file, project.relativePath(file)));
-        }
+    private final Queue<FileState> filesToProcess;
+    
+    ProcessingState(Collection<File> sourceFiles) {
+        filesToProcess = sourceFiles.stream().map(FileState::new).collect(Collectors.toCollection(LinkedList::new));
     }
 
-    Map<String, Schema> determineParserTypes(FileState fileState) {
+    Map<String, SchemaWrapperImpl> determineParserTypes(FileState fileState) {
         Set<String> duplicateTypeNames = fileState.getDuplicateTypeNames();
-        Map<String, Schema> types = new HashMap<>();
+        Map<String, SchemaWrapperImpl> types = new HashMap<>();
         for (TypeState typeState : typeStates.values()) {
             String typeName = typeState.getName();
             if (!duplicateTypeNames.contains(typeName)) {
@@ -49,29 +46,17 @@ class ProcessingState {
         return types;
     }
 
-    void processTypeDefinitions(FileState fileState, Map<String, Schema> newTypes) {
-        String path = fileState.getPath();
-        for (Map.Entry<String, Schema> entry : newTypes.entrySet()) {
-            String typeName = entry.getKey();
-            Schema schema = entry.getValue();
-            getTypeState(typeName).processTypeDefinition(path, schema);
-        }
+    void processTypeDefinitions(FileState fileState, Map<String, SchemaWrapperImpl> newTypes) {
+        File sourceFile = fileState.getSourceFile();
+        newTypes.forEach((String typeName, SchemaWrapperImpl schema) -> {
+            typeStates.computeIfAbsent(typeName, TypeState::new).processTypeDefinition(sourceFile, schema);
+        });
         fileState.clearError();
-        processedTotal++;
         queueDelayedFilesForProcessing();
     }
 
     Set<FileState> getFailedFiles() {
         return delayedFiles;
-    }
-
-    TypeState getTypeState(String typeName) {
-        TypeState typeState = typeStates.get(typeName);
-        if (typeState == null) {
-            typeState = new TypeState(typeName);
-            typeStates.put(typeName, typeState);
-        }
-        return typeState;
     }
 
     void queueForProcessing(FileState fileState) {
@@ -93,9 +78,5 @@ class ProcessingState {
 
     boolean isWorkRemaining() {
         return !filesToProcess.isEmpty();
-    }
-
-    int getProcessedTotal() {
-        return processedTotal;
     }
 }

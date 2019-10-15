@@ -1,7 +1,7 @@
 package com.commercehub.avro.depresolver;
 
 public abstract class SchemaWrapper<T> implements Comparable<SchemaWrapper<T>> {
-    protected abstract String getFullName();
+    public abstract String getFullName();
     protected abstract String toJson();
     public abstract T unwrap();
 

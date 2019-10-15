@@ -49,9 +49,11 @@ public class AvroPlugin implements Plugin<Project> {
 
     private static void configureTasks(final Project project) {
         getSourceSets(project).all(sourceSet -> {
-            GenerateAvroProtocolTask protoTask = configureProtocolGenerationTask(project, sourceSet);
-            GenerateAvroJavaTask javaTask = configureJavaGenerationTask(project, sourceSet, protoTask);
-            configureTaskDependencies(project, sourceSet, javaTask);
+            GenerateAvroProtocolTask generateProtoTask = configureProtocolGenerationTask(project, sourceSet);
+            CompileAvroFromProtocolTask compileProtocolTask = configureCompileProtocolTask(project, sourceSet, generateProtoTask);
+            ResolveAvroSchemaTask resolveSchemaTask = configureResolveSchemaTask(project, sourceSet);
+            CompileAvroFromSchemaTask compileSchemaTask = configureCompileSchemaTask(project, sourceSet, resolveSchemaTask);
+            configureTaskDependencies(project, sourceSet, compileProtocolTask, compileSchemaTask);
         });
     }
 
@@ -60,7 +62,7 @@ public class AvroPlugin implements Plugin<Project> {
             SourceSet mainSourceSet = getMainSourceSet(project);
             SourceSet testSourceSet = getTestSourceSet(project);
             project.getTasks().withType(GenerateIdeaModule.class).all(generateIdeaModule ->
-                project.getTasks().withType(GenerateAvroJavaTask.class).all(generateAvroJavaTask ->
+                project.getTasks().withType(BaseCompileAvroTask.class).all(generateAvroJavaTask ->
                     generateIdeaModule.doFirst(task -> project.mkdir(generateAvroJavaTask.getOutputDir()))));
             IdeaModule module = ideaPlugin.getModel().getModule();
             module.setSourceDirs(new SetBuilder<File>()
@@ -95,17 +97,29 @@ public class AvroPlugin implements Plugin<Project> {
         return task;
     }
 
-    private static GenerateAvroJavaTask configureJavaGenerationTask(final Project project, final SourceSet sourceSet,
+    private static ResolveAvroSchemaTask configureResolveSchemaTask(final Project project, final SourceSet sourceSet) {
+        String taskName = sourceSet.getTaskName("resolve", "avroSchema");
+        ResolveAvroSchemaTask task = project.getTasks().create(taskName, ResolveAvroSchemaTask.class);
+        task.setDescription(
+            String.format("Resolves dependencies between %s Avro schema files.", sourceSet.getName()));
+        task.setGroup(GROUP_SOURCE_GENERATION);
+        task.source(getAvroSourceDir(project, sourceSet));
+        task.include("**/*." + SCHEMA_EXTENSION);
+        configurePropertyConvention(task.getOutputDir(), getGeneratedOutputDir(project, sourceSet, SCHEMA_EXTENSION));
+        return task;
+    }
+
+    private static CompileAvroFromProtocolTask configureCompileProtocolTask(final Project project, final SourceSet sourceSet,
                                                                     GenerateAvroProtocolTask protoTask) {
-        String taskName = sourceSet.getTaskName("generate", "avroJava");
-        GenerateAvroJavaTask task = project.getTasks().create(taskName, GenerateAvroJavaTask.class);
-        task.setDescription(String.format("Generates %s Avro Java source files from schema/protocol definition files.",
+        String taskName = sourceSet.getTaskName("compile", "avroProtocol");
+        CompileAvroFromProtocolTask task = project.getTasks().create(taskName, CompileAvroFromProtocolTask.class);
+        task.setDescription(String.format("Generates %s Avro Java source files from protocol definition files.",
             sourceSet.getName()));
         task.setGroup(GROUP_SOURCE_GENERATION);
         task.source(getAvroSourceDir(project, sourceSet));
         task.source(protoTask.getOutputDir());
         task.source(protoTask.getOutputs());
-        task.include("**/*." + SCHEMA_EXTENSION, "**/*." + PROTOCOL_EXTENSION);
+        task.include("**/*." + PROTOCOL_EXTENSION);
         configurePropertyConvention(task.getOutputDir(), getGeneratedOutputDir(project, sourceSet, JAVA_EXTENSION));
 
         sourceSet.getJava().srcDir(task.getOutputDir());
@@ -124,7 +138,35 @@ public class AvroPlugin implements Plugin<Project> {
         return task;
     }
 
-    private static void configureTaskDependencies(final Project project, final SourceSet sourceSet, final GenerateAvroJavaTask javaTask) {
+    private static CompileAvroFromSchemaTask configureCompileSchemaTask(final Project project, final SourceSet sourceSet,
+                                                                    ResolveAvroSchemaTask resolveSchemaTask) {
+        String taskName = sourceSet.getTaskName("compile", "avroSchema");
+        CompileAvroFromSchemaTask task = project.getTasks().create(taskName, CompileAvroFromSchemaTask.class);
+        task.setDescription(String.format("Generates %s Avro Java source files from schema definition files.",
+            sourceSet.getName()));
+        task.setGroup(GROUP_SOURCE_GENERATION);
+        task.source(resolveSchemaTask.getOutputDir());
+        task.source(resolveSchemaTask.getOutputs());
+        task.include("**/*." + SCHEMA_EXTENSION);
+        configurePropertyConvention(task.getOutputDir(), getGeneratedOutputDir(project, sourceSet, JAVA_EXTENSION));
+
+        sourceSet.getJava().srcDir(task.getOutputDir());
+
+        final JavaCompile compileJavaTask = getCompileJavaTask(project, sourceSet);
+        compileJavaTask.source(task.getOutputDir());
+        compileJavaTask.source(task.getOutputs());
+
+        final AvroExtension avroExtension = project.getExtensions().findByType(AvroExtension.class);
+
+        configurePropertyConvention(task.getOutputCharacterEncoding(), project.provider(() -> {
+            String compilationEncoding = compileJavaTask.getOptions().getEncoding();
+            String extensionEncoding = avroExtension.getOutputCharacterEncoding().getOrNull();
+            return compilationEncoding != null ? compilationEncoding : extensionEncoding;
+        }));
+        return task;
+    }
+
+    private static void configureTaskDependencies(final Project project, final SourceSet sourceSet, final OutputDirTask... outputDirTasks) {
         project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", appliedPlugin ->
             project.getTasks().matching(task -> {
                 String compilationTaskName = sourceSet.getCompileTaskName("kotlin");
@@ -132,9 +174,13 @@ public class AvroPlugin implements Plugin<Project> {
             })
                 .all(task -> {
                     if (task instanceof SourceTask) {
-                        ((SourceTask) task).source(javaTask.getOutputs());
+                        for (OutputDirTask outputDirTask : outputDirTasks) {
+                            ((SourceTask) task).source(outputDirTask.getOutputs());
+                        }
                     } else {
-                        task.dependsOn(javaTask);
+                        for (OutputDirTask outputDirTask : outputDirTasks) {
+                            task.dependsOn(outputDirTask);
+                        }
                     }
                 }));
     }

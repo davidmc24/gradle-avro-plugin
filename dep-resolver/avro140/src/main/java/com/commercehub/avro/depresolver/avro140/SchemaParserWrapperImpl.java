@@ -1,4 +1,4 @@
-package com.commercehub.avro.depresolver.avro190;
+package com.commercehub.avro.depresolver.avro140;
 
 import com.commercehub.avro.depresolver.AvroSchemaParseException;
 import com.commercehub.avro.depresolver.DuplicateAvroTypeException;
@@ -12,6 +12,7 @@ import org.apache.avro.SchemaParseException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,26 +21,24 @@ class SchemaParserWrapperImpl extends SchemaParserWrapper<Schema> {
     private static Pattern ERROR_UNKNOWN_TYPE = Pattern.compile("(?i).*(undefined name|not a defined name).*");
     private static Pattern ERROR_DUPLICATE_TYPE = Pattern.compile("Can't redefine: (.*)");
 
-    private final Schema.Parser parser = new Schema.Parser();
-
     SchemaParserWrapperImpl(WrapperFactory<Schema> wrapperFactory) {
         super(wrapperFactory);
     }
 
     @Override
     protected void addTypes(Map<String, SchemaWrapper<Schema>> types) {
-        parser.addTypes(unwrapMap(types));
+        throw new UnsupportedOperationException("Type configuration is not supported in this version");
     }
 
     @Override
     protected boolean isTypeConfigurationSupported() {
-        return true;
+        return false;
     }
 
     @Override
     protected SchemaWrapper<Schema> parse(File sourceFile) throws AvroSchemaParseException {
         try {
-            return wrap(parser.parse(sourceFile));
+            return wrap(Schema.parse(sourceFile));
         } catch (SchemaParseException ex) {
             String errorMessage = ex.getMessage();
             Matcher unknownTypeMatcher = ERROR_UNKNOWN_TYPE.matcher(errorMessage);
@@ -61,6 +60,6 @@ class SchemaParserWrapperImpl extends SchemaParserWrapper<Schema> {
 
     @Override
     protected Map<String, SchemaWrapper<Schema>> getTypes(SchemaWrapper<Schema> schemaWrapper) {
-        return wrapMap(parser.getTypes());
+        return Collections.singletonMap(schemaWrapper.getFullName(), schemaWrapper);
     }
 }

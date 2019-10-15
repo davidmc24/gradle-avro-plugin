@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.commercehub.gradle.plugin.avro;
+package com.commercehub.avro.depresolver;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

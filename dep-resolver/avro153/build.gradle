@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation project(':base')
+    implementation 'org.slf4j:slf4j-simple:1.7.28'
+    implementation 'org.apache.avro:avro:1.5.3'
+}

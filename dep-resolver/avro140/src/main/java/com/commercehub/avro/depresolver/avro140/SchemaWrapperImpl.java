@@ -1,4 +1,4 @@
-package com.commercehub.avro.depresolver.avro190;
+package com.commercehub.avro.depresolver.avro140;
 
 import com.commercehub.avro.depresolver.SchemaWrapper;
 import org.apache.avro.Schema;
