@@ -30,7 +30,7 @@ public class AvroBasePlugin implements Plugin<Project> {
 
     private static void configureExtension(final Project project) {
         final AvroExtension avroExtension = createExtensionWithObjectFactory(project, AVRO_EXTENSION_NAME, DefaultAvroExtension.class);
-        project.getTasks().withType(GenerateAvroJavaTask.class).all(task -> {
+        project.getTasks().withType(GenerateAvroJavaTask.class).configureEach(task -> {
             configurePropertyConvention(task.getOutputCharacterEncoding(), avroExtension.getOutputCharacterEncoding());
             configurePropertyConvention(task.getStringType(), avroExtension.getStringType());
             configurePropertyConvention(task.getFieldVisibility(), avroExtension.getFieldVisibility());
