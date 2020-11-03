@@ -16,6 +16,7 @@
 package com.commercehub.gradle.plugin.avro;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -24,7 +25,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.avro.Schema;
-import org.gradle.api.Project;
+import org.gradle.api.file.ProjectLayout;
 
 class ProcessingState {
     private final Map<String, TypeState> typeStates = new HashMap<>();
@@ -32,9 +33,15 @@ class ProcessingState {
     private final Queue<FileState> filesToProcess = new LinkedList<>();
     private int processedTotal;
 
-    ProcessingState(Iterable<File> files, Project project) {
+    ProcessingState(Iterable<File> files, ProjectLayout projectLayout) {
         for (File file : files) {
-            filesToProcess.add(new FileState(file, project.relativePath(file)));
+            final Path filePath;
+            if (file.toPath().isAbsolute()) {
+                filePath = projectLayout.getProjectDirectory().getAsFile().toPath().relativize(file.toPath());
+            } else {
+                filePath = file.toPath();
+            }
+            filesToProcess.add(new FileState(file, filePath.toString()));
         }
     }
 

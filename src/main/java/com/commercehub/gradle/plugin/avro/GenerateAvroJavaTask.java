@@ -103,7 +103,7 @@ public class GenerateAvroJavaTask extends OutputDirTask {
         this.logicalTypeFactories = objects.mapProperty(String.class, Constants.LOGICAL_TYPE_FACTORY_TYPE.getConcreteClass())
             .convention(DEFAULT_LOGICAL_TYPE_FACTORIES);
         this.customConversions = objects.listProperty(Constants.CONVERSION_TYPE.getConcreteClass()).convention(DEFAULT_CUSTOM_CONVERSIONS);
-        this.resolver = new SchemaResolver(getProject(), getLogger());
+        this.resolver = new SchemaResolver(getProject().getLayout(), getLogger());
     }
 
     @Optional
