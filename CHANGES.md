@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.99.99
+
+* Warns that the version is obsolete up until `2022-08-10Z`, at which point it intentionally stops working.
+
 ## 0.9.1
 * Built using Gradle 4.1
 * Updated versions for cross-compatibility testing

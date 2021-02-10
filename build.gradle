@@ -33,7 +33,7 @@ tasks.withType(AbstractCompile) {
 }
 sourceCompatibility = 1.6
 
-version = "0.9.1"
+version = "0.99.99-SNAPSHOT"
 group = "com.commercehub.gradle.plugin"
 
 pluginBundle {
@@ -110,7 +110,7 @@ checkstyleMain.doLast {
 }
 
 codenarc {
-    toolVersion = "0.24.1"
+    toolVersion = "1.0"
     config = project.resources.text.fromFile("config/codenarc/codenarc.groovy")
 }
 

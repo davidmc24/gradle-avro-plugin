@@ -16,18 +16,36 @@
 package com.commercehub.gradle.plugin.avro;
 
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.internal.ConventionMapping;
 import org.gradle.api.internal.IConventionAware;
 
+import java.util.Date;
 import java.util.concurrent.Callable;
 
 import static com.commercehub.gradle.plugin.avro.Constants.*;
 
 public class AvroBasePlugin implements Plugin<Project> {
+    static final Date VERSION_CUTOFF_DATE = new Date(1660089600000L);
+    static final String PROJECT_URL = "https://github.com/davidmc24/gradle-avro-plugin";
+    Date now = new Date();
+
     @Override
     public void apply(final Project project) {
+        if (now.before(VERSION_CUTOFF_DATE)) {
+            project.getLogger().warn(
+                "This version of gradle-avro-plugin is obsolete and will stop working on {}."
+                + " Please upgrade to a newer version from {} at your earliest opportunity.",
+                VERSION_CUTOFF_DATE, PROJECT_URL
+            );
+        } else {
+            throw new GradleException(
+                "This version of gradle-avro-plugin is obsolete and will no longer function."
+                + " Please upgrade to a newer version from " + PROJECT_URL + " at your earliest opportunity."
+            );
+        }
         configureExtension(project);
     }
 
