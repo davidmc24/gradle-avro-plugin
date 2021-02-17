@@ -30,7 +30,6 @@ public class V2TaskTest {
             
             dependencies {
                 avroSupplement "com.github.davidmc24.avro.supplement:1.10.1:0.0.1-SNAPSHOT"
-                avroSupplement "org.slf4j:slf4j-simple:1.7.30"
             }
             
             tasks.register("v2", com.github.davidmc24.gradle.plugin.avro.V2Task) {
@@ -53,7 +52,12 @@ public class V2TaskTest {
         Files.write(avroFile, Resources.toByteArray(Resources.getResource("examples/inline/Cat.avsc")));
 
         String gradleVersion = "6.8.2"; // TODO: parameterize
-        List<String> args = List.of("--info", "v2");
+        List<String> args = List.of(
+//            "--info",
+//            "--warning-mode", "all",
+//            "--refresh-dependencies",
+//            "dependencies",
+            "v2");
         GradleRunner runner = GradleRunner.create()
             .withProjectDir(testProjectDir.toFile())
             .withGradleVersion(gradleVersion)
