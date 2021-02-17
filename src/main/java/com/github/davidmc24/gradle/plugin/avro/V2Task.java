@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.SourceTask;
 import org.gradle.api.tasks.TaskAction;
@@ -15,7 +16,7 @@ public abstract class V2Task extends SourceTask {
     @Inject
     protected abstract ExecOperations getExecOperations();
 
-    @Input
+    @InputFiles
     abstract ConfigurableFileCollection getClasspath();
 
     @OutputDirectory
