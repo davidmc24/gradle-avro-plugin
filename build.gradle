@@ -1,9 +1,9 @@
 import org.gradle.util.GradleVersion
 
 plugins {
-    id "groovy"
+//    id "groovy"
     id "checkstyle"
-    id "codenarc"
+//    id "codenarc"
     id "idea"
     id "jacoco"
     id "maven-publish"
@@ -45,28 +45,31 @@ task createClasspathManifest {
 }
 
 dependencies {
-    implementation localGroovy()
+//    implementation localGroovy()
     implementation "org.apache.avro:avro-compiler:${compileAvroVersion}"
-    testImplementation "org.spockframework:spock-core:1.3-groovy-2.5"
+//    testImplementation "org.spockframework:spock-core:1.3-groovy-2.5"
     testImplementation gradleTestKit()
     testImplementation "uk.co.datumedge:hamcrest-json:0.2"
+    testImplementation "com.google.guava:guava:30.1-jre"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly files(createClasspathManifest) // Add the classpath file to the test runtime classpath
 }
 
 configurations {
-    codenarc {
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == "org.codehaus.groovy") {
-                if (details.requested.name == "groovy" && details.requested.version != codenarcGroovyVersion) {
-                    // Template support appears to have moved between modules in between versions
-                    details.useTarget("${details.requested.group}:groovy-all:${codenarcGroovyVersion}")
-                } else {
-                    details.useVersion codenarcGroovyVersion
-                }
-                details.because "Required for Java 14+ support"
-            }
-        }
-    }
+//    codenarc {
+//        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//            if (details.requested.group == "org.codehaus.groovy") {
+//                if (details.requested.name == "groovy" && details.requested.version != codenarcGroovyVersion) {
+//                    // Template support appears to have moved between modules in between versions
+//                    details.useTarget("${details.requested.group}:groovy-all:${codenarcGroovyVersion}")
+//                } else {
+//                    details.useVersion codenarcGroovyVersion
+//                }
+//                details.because "Required for Java 14+ support"
+//            }
+//        }
+//    }
 }
 
 tasks.withType(AbstractCompile) {
@@ -198,14 +201,14 @@ checkstyleTest {
     configProperties = ['basedir': "$rootDir/config/checkstyle"]
 }
 
-codenarc {
-    config = project.resources.text.fromFile("config/codenarc/codenarc.groovy")
-    ignoreFailures = false
-    maxPriority1Violations = 0
-    maxPriority2Violations = 0
-    maxPriority3Violations = 0
-    toolVersion = codenarcVersion
-}
+//codenarc {
+//    config = project.resources.text.fromFile("config/codenarc/codenarc.groovy")
+//    ignoreFailures = false
+//    maxPriority1Violations = 0
+//    maxPriority2Violations = 0
+//    maxPriority3Violations = 0
+//    toolVersion = codenarcVersion
+//}
 
 tasks.create("testAvroCompatibility") {
     description = "Tests cross-compatibility of the plugin with different versions of Avro."
@@ -400,6 +403,7 @@ latestGradleKotlinVersions.each { def kotlinVersion ->
 }
 
 tasks.withType(Test) {
+    useJUnitPlatform()
     jvmArgs "-Xss320k"
     minHeapSize "120m"
     maxHeapSize "280m"

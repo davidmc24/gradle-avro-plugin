@@ -1,6 +1,7 @@
 # Change Log
 
 ## Unreleased
+* Dropped support for Gradle 5.x; raised minimum required version to 6.0.0
 
 ## 1.0.0
 * Published to Maven Central (no longer published to JCenter)
