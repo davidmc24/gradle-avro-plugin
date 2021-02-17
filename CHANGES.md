@@ -2,6 +2,9 @@
 
 ## Unreleased
 * Dropped support for Gradle 5.x; raised minimum required version to 6.0.0
+* Start using JUnit 5 for testing
+* Upgrade Checkstyle to 8.40 to support multiline strings
+* Split Checkstyle rules per-source-set to allow no import controls for tests
 
 ## 1.0.0
 * Published to Maven Central (no longer published to JCenter)

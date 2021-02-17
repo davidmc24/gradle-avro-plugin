@@ -78,9 +78,7 @@
         <!-- Imports -->
         <module name="AvoidStarImport"/>
         <module name="IllegalImport"/>
-        <module name="ImportControl">
-            <property name="file" value="${basedir}/import-control.xml"/>
-        </module>
+        <!-- No import control for tests -->
         <module name="ImportOrder">
             <property name="option" value="bottom"/>
             <property name="ordered" value="true"/>
@@ -100,11 +98,6 @@
         <!-- Modifiers -->
         <module name="ModifierOrder"/>
         <module name="RedundantModifier"/>
-
-        <!-- Sizes -->
-        <module name="LineLength">
-            <property name="max" value="140"/>
-        </module>
 
         <!-- Whitespace -->
         <module name="GenericWhitespace"/>
@@ -133,6 +126,11 @@
 
     <!-- Whitespace -->
     <module name="FileTabCharacter"/>
+
+    <!-- Sizes -->
+    <module name="LineLength">
+        <property name="max" value="140"/>
+    </module>
 
     <!-- Leftover code templates -->
     <module name="RegexpSingleline">
