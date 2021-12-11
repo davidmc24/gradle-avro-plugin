@@ -16,8 +16,11 @@
 
 package com.github.davidmc24.gradle.plugin.avro;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.tasks.SourceSet;
 
 class GradleCompatibility {
     static <T> T createExtensionWithObjectFactory(Project project, String extensionName, Class<T> extensionType) {
@@ -33,7 +36,27 @@ class GradleCompatibility {
         if (GradleFeatures.objectFactoryFileCollection.isSupported()) {
             return project.getObjects().fileCollection();
         } else {
-            return project.getLayout().configurableFiles();
+            Class<?>[] parameterTypes = {Object[].class};
+            Object[] args = {new Object[0]};
+            return invokeMethod(project.getLayout(), "configurableFiles", parameterTypes, args);
+        }
+    }
+
+    static String getSourcesJarTaskName(SourceSet sourceSet) {
+        if (GradleFeatures.getSourcesJarTaskName.isSupported()) {
+            return sourceSet.getSourcesJarTaskName();
+        } else {
+            return sourceSet.getTaskName(null, "sourcesJar");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object object, String methodName, Class<?>[] parameterTypes, Object[] args) {
+        try {
+            Method method = object.getClass().getMethod(methodName, parameterTypes);
+            return (T) method.invoke(object, args);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            throw new RuntimeException("Failed to invoke method via reflection", ex);
         }
     }
 }

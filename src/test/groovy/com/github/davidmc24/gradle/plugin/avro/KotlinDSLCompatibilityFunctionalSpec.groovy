@@ -7,7 +7,7 @@ class KotlinDSLCompatibilityFunctionalSpec extends FunctionalSpec {
 
     def "setup"() {
         buildFile.delete() // Don't use the Groovy build file created by the superclass
-        kotlinBuildFile = testProjectDir.newFile("build.gradle.kts")
+        kotlinBuildFile = projectFile("build.gradle.kts")
         kotlinBuildFile << """
         |plugins {
         |    java
@@ -44,7 +44,7 @@ class KotlinDSLCompatibilityFunctionalSpec extends FunctionalSpec {
         |    isCreateOptionalGetters.set(false)
         |    isGettersReturnOptional.set(false)
         |    isOptionalGettersForNullableFieldsOnly.set(false)
-        |    fieldVisibility.set("PUBLIC_DEPRECATED")
+        |    fieldVisibility.set("PUBLIC")
         |    outputCharacterEncoding.set("UTF-8")
         |    stringType.set("String")
         |    templateDirectory.set(null as String?)

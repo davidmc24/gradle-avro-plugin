@@ -40,8 +40,8 @@ class GenerateAvroProtocolTaskFunctionalSpec extends FunctionalSpec {
         |}
         |""".stripMargin()
 
-        copyResource("shared.avdl", testProjectDir.newFolder("src", "shared"))
-        copyResource("dependent.avdl", testProjectDir.newFolder("src", "dependent"))
+        copyResource("shared.avdl", projectFolder("src/shared"))
+        copyResource("dependent.avdl", projectFolder("src/dependent"))
 
         when: "running the task"
         def result = run("generateProtocol")
@@ -64,7 +64,7 @@ class GenerateAvroProtocolTaskFunctionalSpec extends FunctionalSpec {
         |}
         |""".stripMargin()
 
-        copyResource("shared.avdl", testProjectDir.newFolder("src", "shared"))
+        copyResource("shared.avdl", projectFolder("src/shared"))
         copyResource("dependent.avdl", avroDir)
 
         when: "running the task"
@@ -80,8 +80,8 @@ class GenerateAvroProtocolTaskFunctionalSpec extends FunctionalSpec {
         given: "a project with two IDL files with the same name, but in different directories"
         applyAvroPlugin()
 
-        copyResource("namespaced-idl/v1/test.avdl", testProjectDir.newFolder("src", "main", "avro", "v1"))
-        copyResource("namespaced-idl/v2/test.avdl", testProjectDir.newFolder("src", "main", "avro", "v2"))
+        copyResource("namespaced-idl/v1/test.avdl", projectFolder("src/main/avro/v1"))
+        copyResource("namespaced-idl/v2/test.avdl", projectFolder("src/main/avro/v2"))
 
         when: "running the task"
         def result = run("generateAvroProtocol")
@@ -90,5 +90,21 @@ class GenerateAvroProtocolTaskFunctionalSpec extends FunctionalSpec {
         result.task(":generateAvroProtocol").outcome == SUCCESS
         projectFile("build/generated-main-avro-avpr/org/example/v1/TestProtocol.avpr").file
         projectFile("build/generated-main-avro-avpr/org/example/v2/TestProtocol.avpr").file
+    }
+
+    def "fails if avpr will be overwritten"() {
+        given: "a project with two IDL files with the same protocol name and namespace"
+        applyAvroPlugin()
+
+        copyResource("namespaced-idl/v1/test.avdl", projectFolder("src/main/avro/v1"))
+        copyResource("namespaced-idl/v1/test_same_protocol.avdl", projectFolder("src/main/avro/v1"))
+
+        when: "running the task"
+        run("generateAvroProtocol")
+
+        then:
+        def ex = thrown(Exception)
+        ex.message.contains("Failed to compile IDL file")
+        ex.message.contains("File already processed with same namespace and protocol name.")
     }
 }

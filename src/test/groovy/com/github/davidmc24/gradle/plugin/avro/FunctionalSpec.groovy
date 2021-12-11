@@ -15,22 +15,32 @@
  */
 package com.github.davidmc24.gradle.plugin.avro
 
+import com.vdurmont.semver4j.Semver
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.util.GradleVersion
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 
 @SuppressWarnings(["Println"])
 abstract class FunctionalSpec extends Specification {
-    @SuppressWarnings(["FieldName"])
-    protected static final String avroVersion = System.getProperty("avroVersion", "undefined")
-    @SuppressWarnings(["FieldName"])
-    protected static final GradleVersion gradleVersion = GradleVersion.version(System.getProperty("gradleVersion", "undefined"))
+    protected Semver getAvroVersion() {
+        def version = System.getProperty("avroVersion")
+        if (!version) {
+            throw new IllegalArgumentException("avroVersion project property is required")
+        }
+        return new Semver(version)
+    }
+    protected GradleVersion getGradleVersion() {
+        def version = System.getProperty("gradleVersion")
+        if (!version) {
+            throw new IllegalArgumentException("gradleVersion project property is required")
+        }
+        return GradleVersion.version(version)
+    }
 
-    @Rule
-    TemporaryFolder testProjectDir
+    @TempDir
+    File testProjectDir
 
     File buildFile
     File avroDir
@@ -40,9 +50,9 @@ abstract class FunctionalSpec extends Specification {
         println "Testing using Avro version ${avroVersion}."
         println "Testing using Gradle version ${gradleVersion}."
 
-        buildFile = testProjectDir.newFile("build.gradle")
-        avroDir = testProjectDir.newFolder("src", "main", "avro")
-        avroSubDir = testProjectDir.newFolder("src", "main", "avro", "foo")
+        buildFile = projectFile("build.gradle")
+        avroDir = projectFile("src/main/avro")
+        avroSubDir = projectFile("src/main/avro/foo")
     }
 
     protected String readPluginClasspath() {
@@ -96,7 +106,15 @@ abstract class FunctionalSpec extends Specification {
     }
 
     protected void copyResource(String name, File targetFolder) {
-        def file = new File(targetFolder, name)
+        copyResource(name, targetFolder, name)
+    }
+
+    protected void copyResource(String name, File targetFolder, String targetName) {
+        def resource = getClass().getResourceAsStream(name)
+        def file = new File(targetFolder, targetName)
+        if (resource == null) {
+            throw new FileNotFoundException("Could not resource with name ${name}")
+        }
         file.parentFile.mkdirs()
         file << getClass().getResourceAsStream(name)
     }
@@ -109,11 +127,21 @@ abstract class FunctionalSpec extends Specification {
     }
 
     protected File projectFile(String path) {
-        return new File(testProjectDir.root, path)
+        File file = new File(testProjectDir, path)
+        file.parentFile.mkdirs()
+        return file
+    }
+
+    protected File projectFolder(String path) {
+        File file = new File(testProjectDir, path)
+        file.mkdirs()
+        return file
     }
 
     protected GradleRunner createGradleRunner() {
-        return GradleRunner.create().withProjectDir(testProjectDir.root).withGradleVersion(gradleVersion.version).withPluginClasspath()
+//        // Set up code coverage reporting based on https://github.com/koral--/jacoco-gradle-testkit-plugin
+//        copyResource("/testkit-gradle.properties", testProjectDir, "gradle.properties")
+        return GradleRunner.create().withProjectDir(testProjectDir).withGradleVersion(gradleVersion.version).withPluginClasspath()
     }
 
     protected BuildResult run(String... args = ["build"]) {
@@ -135,5 +163,13 @@ abstract class FunctionalSpec extends Specification {
             arguments << "--configuration-cache"
         }
         return arguments
+    }
+
+    protected boolean isLocalTimestampConversionSupported() {
+        return avroVersion.isGreaterThanOrEqualTo(new Semver("1.10.0"))
+    }
+
+    protected String getInteropIDLResourceName() {
+        return localTimestampConversionSupported ? "interop.avdl" : "interop-1.9.avdl"
     }
 }

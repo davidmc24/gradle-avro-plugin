@@ -53,10 +53,10 @@ public class V2TaskTest {
 
         String gradleVersion = "6.8.2"; // TODO: parameterize
         List<String> args = List.of(
-//            "--info",
-//            "--warning-mode", "all",
-//            "--refresh-dependencies",
-//            "dependencies",
+            //"--info",
+            //"--warning-mode", "all",
+            //"--refresh-dependencies",
+            //"dependencies",
             "v2");
         GradleRunner runner = GradleRunner.create()
             .withProjectDir(testProjectDir.toFile())

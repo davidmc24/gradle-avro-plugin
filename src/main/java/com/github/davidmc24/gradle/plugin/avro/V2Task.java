@@ -4,7 +4,6 @@ import java.io.File;
 import javax.inject.Inject;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.SourceTask;
@@ -30,8 +29,8 @@ public abstract class V2Task extends SourceTask {
             ExecResult result = exec.javaexec(jvm -> {
                 jvm.classpath(getClasspath());
                 // TODO: abstract
-                jvm.setMain("com.github.davidmc24.avro.supplement.impl.CompileSchemaCommand");
-                jvm.args("--file=" + file.getAbsolutePath(), "--output=" + getDestinationDirectory().get().getAsFile().getPath());
+                jvm.getMainClass().set("com.github.davidmc24.avro.supplement.impl.CompileSchemaCommand");
+                jvm.args("--output=" + getDestinationDirectory().get().getAsFile().getPath(), file.getAbsolutePath());
             });
             result.rethrowFailure().assertNormalExitValue();
         }

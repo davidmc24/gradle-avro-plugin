@@ -6,6 +6,34 @@
 * Upgrade Checkstyle to 8.40 to support multiline strings
 * Split Checkstyle rules per-source-set to allow no import controls for tests
 
+## 1.3.0
+* Built using Avro 1.11.0
+* Dropped support for Avro 1.9.0-1.10.2 due to use of new SpecificRecordBuilderBase constructor in Avro 1.11.0
+* Default field visibility is now "PRIVATE" to match Avro's new default, as "PUBLIC_DEPRECATED" is no longer supported in Avro 1.11.0
+* Built using Gradle 7.3
+* Updated compatibility testing through Gradle 7.3
+* Updated compatibility testing through Kotlin 1.5.31
+* Added compatibility with Java 17
+* `GenerateAvroProtocolTask` now has a debug log to output its classpath
+* `GenerateAvroProtocolTask` will no longer delegate to the system classloader
+
+## 1.2.1
+* Built using Gradle 7.1.1
+* Updated compatibility testing through Gradle 7.1.1
+* When `sourcesJar` is used, declares dependency on `GenerateAvroJavaTask`s to avoid disabling execution optimizations introduced in Gradle 7.1. (see #167)
+
+## 1.2.0
+* Avro 1.9.0-1.9.2 is supported again (no changed needed; just change in support policy and testing)
+* `generateAvroProtocol` task fails if avpr file will get overwritten (due to multiple IDL files using the same namespace and protocol)
+
+## 1.1.0
+* Built using Avro 1.10.2
+* Built using Gradle 7.0-rc-1
+* Updated compatibility testing through Gradle 6.8.3/7.0-rc-1
+* Updated compatibility testing through Kotlin 1.4.32
+* Updated compatibility testing to include Java 16/17-ea
+* Adopted Github Actions for compatibility testing
+
 ## 1.0.0
 * Published to Maven Central (no longer published to JCenter)
 * New plugin IDs: `com.github.davidmc24.gradle.plugin.avro` and `com.github.davidmc24.gradle.plugin.avro-base`

@@ -8,20 +8,26 @@ This is a [Gradle](http://www.gradle.org/) plugin to allow easily performing Jav
 
 **NOTE**: Pre-1.0 versions used a different publishing process/namespace.  It is strongly recommended to upgrade to a newer version.  Further details can be found in the [change log](CHANGES.md).
 
-* Currently tested against Java 8-15
+* Currently tested against Java 8-16
+    * Though not supported yet, tests are also run against Java 18 to provide early notification of potential incompatibilities.
+    * Java 17 support requires Gradle 7.3 or higher (as per Gradle's release notes)
+    * Java 16 support requires Gradle 7.0 or higher (as per Gradle's release notes)
     * Java 15 support requires Gradle 6.7 or higher (as per Gradle's release notes)
     * Java 14 support requires Gradle 6.3 or higher (as per Gradle's release notes)
     * Java 13 support requires Gradle 6.0 or higher
-    * Java 11 support requires Gradle 5.1 or higher (versions lower than 5.1 are no longer supported)
-    * Though not supported yet, tests are also run against early-access builds of Java 16 to provide early notification of potential incompatibilities
-* Currently built against Gradle 6.7.1
-    * Currently tested against Gradle 6.0-6.7.1
-* Currently built against Avro 1.10.1
-    * Currently tested against Avro 1.10.0-1.10.1
+    * Java 8-12 support requires Gradle 5.1 or higher (versions lower than 5.1 are no longer supported)
+* Currently built against Gradle 7.3
+    * Currently tested against Gradle 5.1-5.6.4 and 6.0-7.3
+* Currently built against Avro 1.11.0
+    * Currently tested against Avro 1.11.0
+    * Avro 1.9.0-1.10.2 were last supported in version 1.2.1 
 * Support for Kotlin
-    * Currently tested against Kotlin plugin versions 1.3.20-1.3.72 and 1.4.0-1.4.20 using the latest compatible version of Gradle
+    * Currently tested against Kotlin plugin versions 1.3.20-1.3.72 and 1.4.0-1.4.32 and 1.5.0-1.5.31 using the latest compatible version of Gradle
     * Currently tested against Kotlin plugin versions 1.2.20-1.2.71 and 1.3.0-1.3.11 using Gradle 5.1
+    * Kotlin plugin versions 1.4.20-1.4.32 require special settings to work with Java 17+; see [KT-43704](https://youtrack.jetbrains.com/issue/KT-43704#focus=Comments-27-4639603.0-0)
+    * Kotlin plugin version 1.3.30 is not compatible with Gradle 7.0+
     * Kotlin plugin versions starting with 1.4.0 require Gradle 5.3+
+    * Kotlin plugin versions prior to 1.3.20 do not support Gradle 6.0+
     * Kotlin plugin versions prior to 1.2.30 do not support Java 10+
     * Version of the Kotlin plugin prior to 1.2.20 are unlikely to work
 * Support for Gradle Kotlin DSL
@@ -47,14 +53,14 @@ plugins {
 }
 ```
 
-Additionally, ensure that you have a compile dependency on Avro, such as:
+Additionally, ensure that you have an implementation dependency on Avro, such as:
 
 ```groovy
 repositories {
     mavenCentral()
 }
 dependencies {
-    compile "org.apache.avro:avro:1.10.1"
+    implementation "org.apache.avro:avro:1.11.0"
 }
 ```
 
@@ -71,11 +77,16 @@ There are a number of configuration options supported in the `avro` block.
 | createOptionalGetters                | `false`               | `createOptionalGetters` passed to Avro compiler                |
 | gettersReturnOptional                | `false`               | `gettersReturnOptional` passed to Avro compiler                |
 | optionalGettersForNullableFieldsOnly | `false`               | `optionalGettersForNullableFieldsOnly` passed to Avro compiler |
-| fieldVisibility                      | `"PUBLIC_DEPRECATED"` | `fieldVisibility` passed to Avro compiler                      |
+| fieldVisibility                      | `"PRIVATE"`           | `fieldVisibility` passed to Avro compiler                      |
 | outputCharacterEncoding              | see below             | `outputCharacterEncoding` passed to Avro compiler              |
 | stringType                           | `"String"`            | `stringType` passed to Avro compiler                           |
 | templateDirectory                    | see below             | `templateDir` passed to Avro compiler                          |
 | enableDecimalLogicalType             | `true`                | `enableDecimalLogicalType` passed to Avro compiler             |
+
+Additionally, the `avro` extension exposes the following methods:
+
+* `logicalTypeFactory(String typeName, Class typeFactoryClass)`: register an additional logical type factory
+* `customConversion(Class conversionClass)`: register a custom conversion
 
 ## createSetters
 
@@ -145,16 +156,16 @@ avro {
 
 ## fieldVisibility
 
-Valid values: any [FieldVisibility](http://avro.apache.org/docs/1.8.1/api/java/org/apache/avro/compiler/specific/SpecificCompiler.FieldVisibility.html) or equivalent `String` name (matched case-insensitively); default `"PUBLIC_DEPRECATED"` (default)
+Valid values: any [FieldVisibility](https://avro.apache.org/docs/1.11.0/api/java/org/apache/avro/compiler/specific/SpecificCompiler.FieldVisibility.html) or equivalent `String` name (matched case-insensitively); default `"PRIVATE"` (default)
 
-By default, the fields in generated Java files will have public visibility and be annotated with `@Deprecated`.
-Set to `"PRIVATE"` to restrict visibility of the fields, or `"PUBLIC"` to remove the `@Deprecated` annotations.
+By default, the fields in generated Java files will have private visibility.
+Set to `"PRIVATE"` to explicitly specify private visibility of the fields, or `"PUBLIC"` to specify public visibility of the fields.
 
 Example:
 
 ```groovy
 avro {
-    fieldVisibility = "PRIVATE"
+    fieldVisibility = "PUBLIC"
 }
 ```
 
@@ -239,7 +250,7 @@ apply plugin: "java"
 apply plugin: "com.github.davidmc24.gradle.plugin.avro-base"
 
 dependencies {
-    implementation "org.apache.avro:avro:1.10.1"
+    implementation "org.apache.avro:avro:1.11.0"
 }
 
 def generateAvro = tasks.register("generateAvro", GenerateAvroJavaTask) {
