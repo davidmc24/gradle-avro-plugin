@@ -1,6 +1,7 @@
 # Change Log
 
 ## Unreleased
+* Built using Avro 1.11.2
 
 ## 1.7.1
 * Fix vulnerabilities in transitive dependencies (contribution from [BlacCello](https://github.com/BlacCello)); see https://github.com/davidmc24/gradle-avro-plugin/pull/229
