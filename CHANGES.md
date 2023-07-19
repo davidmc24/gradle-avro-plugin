@@ -1,6 +1,8 @@
 # Change Log
 
 ## Unreleased
+
+## 1.8.0
 * Built using Avro 1.11.2
 
 ## 1.7.1
