@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 1.9.0
+* Built using Avro 1.11.3
+
 ## 1.8.0
 * Built using Avro 1.11.2
 
