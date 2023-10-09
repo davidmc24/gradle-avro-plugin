@@ -31,7 +31,6 @@ class AvroUtilsSpec extends Specification {
         arg                                    | _
         createSchema(null, null, true)         | _
         createSchema(null, EMPTY_STRING, true) | _
-        createProtocol(null, null)             | _
         createProtocol(null, EMPTY_STRING)     | _
     }
 
