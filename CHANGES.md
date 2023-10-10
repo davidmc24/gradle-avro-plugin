@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 1.9.1
+* Upgrade commons-compress to 1.24.0 due to CVE-2023-42503
+
 ## 1.9.0
 * Built using Avro 1.11.3
 
