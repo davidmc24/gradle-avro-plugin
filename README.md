@@ -1,8 +1,7 @@
-# Seeking New Maintainer
+# End of life
 
-For more details, see [the discussion](https://github.com/davidmc24/gradle-avro-plugin/discussions/208).
-
-If no new maintainer is found, this project will be archived on October 22, 2023 (the 10 year anniversary of this project's first public commit).
+This project is no longer maintained.
+Its code has been donated to the [Apache Avro project](http://avro.apache.org/), which will be handling releases going forward.
 
 # Overview
 
